@@ -16,7 +16,8 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
 
 # Configure
 COPY generate_ssl_key.sh /usr/local/bin/
-RUN mkdir -p /var/cache/nginx/cache && \
+RUN ln -sf /usr/share/zoneinfo/EST5EDT /etc/localtime && \
+    mkdir -p /var/cache/nginx/cache && \
     /usr/local/bin/generate_ssl_key.sh
 
 VOLUME ["/usr/share/nginx/html", "/etc/nginx"]
