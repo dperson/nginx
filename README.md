@@ -23,29 +23,29 @@ concept port for Microsoft Windows.
 
 # How to use this image
 
-Hosting some simple static content
+## Hosting some simple static content
 
-    sudo docker run --name some-nginx -v /some/path:/usr/share/nginx/html:ro -d nginx
+    sudo docker run --name web -v /some/path:/usr/share/nginx/html:ro -d dperson/nginx
 
 ## Exposing the port
 
-    sudo docker run --name some-nginx -d -p 8080:80 some-content-nginx
+    sudo docker run --name web -d -p 8080:80 dperson/nginx
 
 Then you can hit `http://localhost:8080` or `http://host-ip:8080` in your
 browser.
 
 ## Complex configuration
 
-    sudo docker run --name some-nginx -v /some/nginx.conf:/etc/nginx/nginx.conf:ro -d nginx
+    sudo docker run --name web -v /some/nginx.conf:/etc/nginx/nginx.conf:ro -d dperson/nginx
 
 For information on the syntax of the Nginx configuration files, see
 [the official documentation](http://nginx.org/en/docs/) (specifically the
 [Beginner's Guide](http://nginx.org/en/docs/beginners_guide.html#conf_structure)).
 
 If you wish to adapt the default configuration, use something like the following
-to copy it from a running Nginx container:
+to copy it from a running container:
 
-    sudo docker cp some-nginx:/etc/nginx/nginx.conf /some/nginx.conf
+    sudo docker cp web:/etc/nginx/nginx.conf /some/nginx.conf
 
 # User Feedback
 
