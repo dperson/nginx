@@ -20,7 +20,7 @@
 set -o nounset                              # Treat unset variables as an error
 
 #Required
-domain=${1:-home.lan}
+domain=${1:-*}
 
 #Change to your details
 country=${2:-NO}
@@ -32,4 +32,4 @@ cert=/etc/ssl/certs/cert.pem
 key=/etc/ssl/private/key.pem
 
 openssl req -x509 -newkey rsa:2048 -keyout $key -out $cert -days 3600 \
-    -nodes -subj "/C=$country/ST=$state/L=$locality/O=$org${1:+/CN=$domain}"
+    -nodes -subj "/C=$country/ST=$state/L=$locality/O=$org/CN=$domain"
