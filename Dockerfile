@@ -15,13 +15,10 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
 # Forward request and error logs to docker log collector
 
 # Configure
-COPY generate_ssl_key.sh /usr/local/bin/
-RUN ln -sf /usr/share/zoneinfo/EST5EDT /etc/localtime && \
-    mkdir -p /var/cache/nginx/cache && \
-    /usr/local/bin/generate_ssl_key.sh
+COPY nginx.sh /
 
 VOLUME ["/usr/share/nginx/html", "/etc/nginx"]
 
 EXPOSE 80 443
 
-CMD nginx -g "daemon off;"
+ENTRYPOINT ["nginx.sh"]
