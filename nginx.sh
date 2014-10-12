@@ -176,7 +176,7 @@ shift $(( OPTIND - 1 ))
 [[ -d /etc/nginx/ssl ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 
-if [[ $# -ge 1 && -x $1 ]]; then
+if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
 elif [[ $# -ge 1 ]]; then
     echo "ERROR: command not found: $1"
