@@ -28,7 +28,7 @@ proxy_cache_path /var/cache/nginx/cache levels=1:2
 #
 server {
     listen      443 ssl spdy default_server;
-    # listen      [::]:443 default_server ipv6only=on;
+    # listen      [::]:443 ssl spdy default_server ipv6only=on;
     proxy_cache mmcache;
 
     ssl on;
@@ -46,15 +46,6 @@ server {
         # as directory, then fall back to displaying a 404.
         try_files $uri $uri/ =404;
     }
-
-    #error_page 404 /404.html;
-
-    # redirect server error pages to the static page /50x.html
-    #
-    #error_page 500 502 503 504 /50x.html;
-    #location = /50x.html {
-    #    root /usr/share/nginx/html;
-    #}
 
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
     #
@@ -75,6 +66,15 @@ server {
     #
     #location ~ /\.ht {
     #    deny all;
+    #}
+
+    #error_page 404 /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    #error_page 500 502 503 504 /50x.html;
+    #location = /50x.html {
+    #    root /usr/share/nginx/html;
     #}
 }
 

@@ -50,10 +50,13 @@ gencert() {
 # Return: setup PFS config
 pfs() {
     local compat=${1:-""}
+    local dh=/etc/nginx/ssl/dh2048.pem
     local file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
 
+    [[ -e $dh || $quick ]] || gencert
+
     echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' > $file
-    echo 'ssl_dhparam /etc/nginx/ssl/dh2048.pem;' >> $file
+    echo 'ssl_dhparam '"$dh"';' >> $file
     echo '' >> $file
     echo 'ssl_prefer_server_ciphers on;' >> $file
     if [[ -z $compat ]]; then
@@ -81,6 +84,7 @@ prod() {
 # Return: configure HSTS
 hsts() {
     local file=/etc/nginx/conf.d/hsts.conf
+    local file2=/etc/nginx/sites-available/default
 
     cat > $file << EOF
 # HTTP Strict Transport Security (HSTS)
@@ -89,6 +93,24 @@ add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
 # other sites from framing your site, so delete or modify as necessary!
 add_header X-Frame-Options SAMEORIGIN;
 EOF
+    sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
+\
+     rewrite ^(.*) https://$host$1 permanent;\
+}
+                }'$file2
+}
+
+### name: Set server_name
+# Arguments:
+#   name) new server name
+#   oldname) old name to change from (defaults to localhost)
+# Return: configure server_name
+name() {
+    local name=$1
+    local oldname=${2:-localhost}
+    local file=/etc/nginx/sites-available/default
+
+    sed -i 's/\(^ *server_name\) '"$oldname"';/\1 '"$name"';/' $file
 }
 
 ### ssi: Server Side Includes
@@ -255,6 +277,7 @@ Options (fields in '[]' are optional, '<>' are required):
     -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
     -i          Enable SSI (Server Side Includes)
+    -n          set server_name <name>[:oldname]
     -q          quick (don't create certs)
     -r \"<service;location>\" Redirect a hostname to a URL
                 required arg: \"<port>;<hostname>;<https://destination/URI>\"
@@ -281,7 +304,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hg:p:PHir:s:S:t:u:w:q" opt; do
+while getopts ":hg:p:PHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         g) gencert $(sed 's/;/ /g' <<< $OPTARG) ;;
@@ -289,13 +312,14 @@ while getopts ":hg:p:PHir:s:S:t:u:w:q" opt; do
         P) prod ;;
         H) hsts ;;
         i) ssi ;;
+        n) name $(sed 's/;/ /g' <<< $OPTARG) ;;
+        q) quick=1 ;;
         r) redirect $(sed 's/;/ /g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
         u) uwsgi $(sed 's/;/ /g' <<< $OPTARG) ;;
         w) proxy $(sed 's/;/ /g' <<< $OPTARG) ;;
-        q) quick=1 ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
