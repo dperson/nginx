@@ -158,7 +158,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hg:p:Hs:S:t:" opt; do
+while getopts ":hg:p:Hs:S:t:q" opt; do
     case "$opt" in
         h) usage ;;
         g) gencert $(sed 's/:/ /g' <<< $OPTARG) ;;
