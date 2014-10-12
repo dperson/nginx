@@ -83,11 +83,25 @@ hsts() {
     local file=/etc/nginx/conf.d/hsts.conf
 
     cat > $file << EOF
+# HTTP Strict Transport Security (HSTS)
 add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
 # This will prevent certain click-jacking attacks, but will prevent
 # other sites from framing your site, so delete or modify as necessary!
 add_header X-Frame-Options SAMEORIGIN;
 EOF
+}
+
+### ssi: Server Side Includes
+# Arguments:
+#   none)
+# Return: configure SSI
+ssi() {
+    local file=/etc/nginx/sites-available/default
+
+    sed -i '/location \/ /,/^    }/ { /^    }/i\
+\
+        ssi on;
+        }' $file
 }
 
 ### stapling: SSL stapling
@@ -98,9 +112,10 @@ stapling() {
     local cert=${1:-blank}
     local file=/etc/nginx/conf.d/stapling.conf
 
-    [[ -e $cert ]] || echo "ERROR: invalid stapling cert: $cert" >&2
+    [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
-    echo 'ssl_stapling on;' > $file
+    echo '# OCSP (Online Certificate Status Protocol) SSL stapling' > $file
+    echo 'ssl_stapling on;' >> $file
     echo 'ssl_stapling_verify on;' >> $file
     echo "ssl_trusted_certificate $cert;" >> $file
     echo 'resolver 8.8.4.4 8.8.8.8 valid=300s;' >> $file
@@ -135,6 +150,63 @@ timezone() {
     ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
 }
 
+### uwsgi: Configure a UWSGI proxy
+# Arguments:
+#   service) where to contact UWSGI
+#   location) URI in web server
+# Return: UWSGI added to the config file
+uwsgi() {
+    local service=$1
+    local location=$2
+    local file=/etc/nginx/sites-available/default
+
+    sed -i '/proxy_cache_path/,/^$/ { /^$/a\
+\
+upstream uwsgicluster {\
+    server '"$service"';\
+}\
+
+        }' $file
+    sed -i '/location \/ /,/^    }/ { /^    }/a\
+\
+    location '"$location"' {\
+        proxy_cache_valid any 1m;\
+        proxy_cache_min_uses 3;\
+\
+        uwsgi_pass uwsgicluster;\
+        uwsgi_param SCRIPT_NAME '"$location"';\
+        include uwsgi_params;\
+        uwsgi_modifier1 30;\
+    }
+        }' $file
+}
+
+### proxy: Configure a web proxy
+# Arguments:
+#   service) where to contact HTTP service
+#   location) URI in web server
+# Return: proxy added to the config file
+proxy() {
+    local service=$1
+    local location=$2
+    local file=/etc/nginx/sites-available/default
+
+    sed -i '/location \/ /,/^    }/ { /^    }/a\
+\
+    location '"$location"' {\
+        proxy_pass       '"$location"';\
+        proxy_set_header X-Real-IP $remote_addr;\
+\
+        proxy_buffering on;\
+        proxy_buffers 8 4k;\
+        proxy_busy_buffers_size 8k;\
+\
+        proxy_cache_valid any 1m;\
+        proxy_cache_min_uses 3;\
+    }
+        }' $file
+}
+
 ### usage: Help
 # Arguments:
 #   none)
@@ -143,10 +215,10 @@ usage() {
     local RC=${1:-0}
 
     echo "Usage: ${0##*/} [-opt] [command]
-Options (fields in '[]' are optional):
+Options (fields in '[]' are optional, '<>' are required):
     -h          This help
     -g \"\"       Generate a selfsigned SSL cert
-                possible args: \"[domain][:country][:state][:locality][:org]\"
+                possible args: \"[domain][;country][;state][;locality][;org]\"
                     domain - FQDN for server
                     country - 2 letter country code
                     state - state of server location
@@ -154,30 +226,43 @@ Options (fields in '[]' are optional):
                     org - company
     -p \"\"       Configure PFS (Perfect Forward Secrecy)
                 possible arg: \"[compat]\" - allow old insecure crypto
+    -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
-    -s \"cert\"   Configure SSL stapling
-                cert(s) your CA uses for the OCSP check
+    -i          Enable SSI (Server Side Includes)
+    -q          quick (don't create certs)
+    -s \"<cert>\" Configure SSL stapling
+                required arg: cert(s) your CA uses for the OCSP check
     -S \"\"       Configure SSL sessions
                 possible arg: \"[timeout]\" - timeout for session reuse
     -t \"\"       Configure timezone
                 possible arg: \"[timezone]\" - zoneinfo timezone for container
-    -q          quick (don't create certs)
+    -u \"<service;location>\" Configure UWSGI proxy and location
+                required arg: \"<server:port|unix:///path/to.sock>;</location>\"
+                <service> is how to contact UWSGI
+                <location> is the URI in nginx (IE: /wiki)
+    -w \"<service;location>\" Configure web proxy and location
+                required arg: \"<server:port>;</location>\"
+                <service> is how to contact the HTTP service
+                <location> is the URI in nginx (IE: /mediatomb)
 
 The 'command' (if provided and valid) will be run instead of nginx
 " >&2
     exit $RC
 }
 
-while getopts ":hg:p:PHs:S:t:q" opt; do
+while getopts ":hg:p:PHis:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
-        g) gencert $(sed 's/:/ /g' <<< $OPTARG) ;;
+        g) gencert $(sed 's/;/ /g' <<< $OPTARG) ;;
         p) pfs $OPTARG ;;
         P) prod ;;
         H) hsts ;;
+        i) ssi ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
+        u) uwsgi $(sed 's/;/ /g' <<< $OPTARG) ;;
+        w) proxy $(sed 's/;/ /g' <<< $OPTARG) ;;
         q) quick=1 ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
