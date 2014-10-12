@@ -97,7 +97,7 @@ EOF
 \
      rewrite ^(.*) https://$host$1 permanent;\
 }
-                }'$file2
+                }' $file2
 }
 
 ### name: Set server_name
