@@ -39,7 +39,7 @@ gencert() {
 
     [[ -d $dir ]] || mkdir -p $dir
 
-    openssl dhparam -out $dir/dh2048.pem 2048
+    [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
     openssl req -x509 -newkey rsa:2048 -keyout $key -out $cert -days 3600 \
         -nodes -subj "/C=$country/ST=$state/L=$locality/O=$org/CN=$domain"
 }
@@ -63,6 +63,16 @@ pfs() {
         echo "ssl_protocols SSLv3, TLSv1, TLSv1.1, TLSv1.2;" >> $file
         echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128:AES256:AES:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK';" >> $file
     fi
+}
+
+### prod: Production mode
+# Arguments:
+#   none)
+# Return: Turn off server tokens
+prod() {
+    local file=/etc/nginx/nginx.conf
+
+    sed -i '/# server_tokens/s/# //' $file
 }
 
 ### hsts: HTTP Strict Transport Security
@@ -158,11 +168,12 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hg:p:Hs:S:t:q" opt; do
+while getopts ":hg:p:PHs:S:t:q" opt; do
     case "$opt" in
         h) usage ;;
         g) gencert $(sed 's/:/ /g' <<< $OPTARG) ;;
         p) pfs $OPTARG ;;
+        P) prod ;;
         H) hsts ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;

@@ -15,6 +15,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
 # Forward request and error logs to docker log collector
 
 # Configure
+COPY default /etc/nginx/sites-available/
 COPY nginx.sh /usr/bin/
 
 VOLUME ["/usr/share/nginx/html", "/etc/nginx"]
