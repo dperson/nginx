@@ -1,6 +1,6 @@
 # You may add here your
 # server {
-#   ...
+#    ...
 # }
 # statements for each of your virtual hosts to this file
 
@@ -22,55 +22,6 @@ proxy_cache_path /var/cache/nginx/cache levels=1:2
             loader_threshold=300
             loader_files=200
             max_size=50m;
-
-
-server {
-    listen 80 default_server;
-    # listen [::]:80 default_server ipv6only=on;
-    proxy_cache mmcache;
-
-    root /usr/share/nginx/html;
-    index index.html index.htm;
-
-    # Make site accessible from http://localhost/
-    server_name localhost;
-
-    location / {
-        # First attempt to serve request as file, then
-        # as directory, then fall back to displaying a 404.
-        try_files $uri $uri/ =404;
-    }
-
-    #error_page 404 /404.html;
-
-    # redirect server error pages to the static page /50x.html
-    #
-    #error_page 500 502 503 504 /50x.html;
-    #location = /50x.html {
-    #   root /usr/share/nginx/html;
-    #}
-
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    #location ~ \.php$ {
-    #   fastcgi_split_path_info ^(.+\.php)(/.+)$;
-    #   # NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
-    #
-    #   # With php5-cgi alone:
-    #   fastcgi_pass 127.0.0.1:9000;
-    #   # With php5-fpm:
-    #   fastcgi_pass unix:/var/run/php5-fpm.sock;
-    #   fastcgi_index index.php;
-    #   include fastcgi_params;
-    #}
-
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    #location ~ /\.ht {
-    #   deny all;
-    #}
-}
 
 
 # HTTPS server
@@ -102,6 +53,55 @@ server {
     #
     #error_page 500 502 503 504 /50x.html;
     #location = /50x.html {
+    #    root /usr/share/nginx/html;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    #    # NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+    #
+    #    # With php5-cgi alone:
+    #    fastcgi_pass 127.0.0.1:9000;
+    #    # With php5-fpm:
+    #    fastcgi_pass unix:/var/run/php5-fpm.sock;
+    #    fastcgi_index index.php;
+    #    include fastcgi_params;
+    #}
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny all;
+    #}
+}
+
+
+server {
+    listen 80 default_server;
+    # listen [::]:80 default_server ipv6only=on;
+    proxy_cache mmcache;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    # Make site accessible from http://localhost/
+    server_name localhost;
+
+    location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404;
+    }
+
+    #error_page 404 /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    #error_page 500 502 503 504 /50x.html;
+    #location = /50x.html {
     #   root /usr/share/nginx/html;
     #}
 }
@@ -110,13 +110,13 @@ server {
 # another virtual host using mix of IP-, name-, and port-based configuration
 #
 #server {
-#   listen 8000;
-#   listen somename:8080;
-#   server_name somename alias another.alias;
-#   root html;
-#   index index.html index.htm;
+#    listen 8000;
+#    listen somename:8080;
+#    server_name somename alias another.alias;
+#    root html;
+#    index index.html index.htm;
 #
-#   location / {
-#       try_files $uri $uri/ =404;
-#   }
+#    location / {
+#        try_files $uri $uri/ =404;
+#    }
 #}
