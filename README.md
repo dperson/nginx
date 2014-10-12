@@ -29,14 +29,52 @@ concept port for Microsoft Windows.
 
 ## Exposing the port
 
-    sudo docker run --name web -d -p 8080:80 dperson/nginx
+    sudo docker run --name web -p 8080:80 -d dperson/nginx
 
 Then you can hit `http://localhost:8080` or `http://host-ip:8080` in your
 browser.
 
 ## Complex configuration
 
-    sudo docker run --name web -v /some/nginx.conf:/etc/nginx/nginx.conf:ro -d dperson/nginx
+    dockerhost$ docker/nginx/nginx.sh -h
+    Usage: nginx.sh [-opt] [command]
+    Options (fields in '[]' are optional, '<>' are required):
+        -h          This help
+        -g ""       Generate a selfsigned SSL cert
+                    possible args: "[domain][;country][;state][;locality][;org]"
+                        domain - FQDN for server
+                        country - 2 letter country code
+                        state - state of server location
+                        locality - city
+                        org - company
+        -p ""       Configure PFS (Perfect Forward Secrecy)
+                    possible arg: "[compat]" - allow old insecure crypto
+        -P          Configure Production mode (no server tokens)
+        -H          Configure HSTS (HTTP Strict Transport Security)
+        -i          Enable SSI (Server Side Includes)
+        -n          set server_name <name>[:oldname]
+        -q          quick (don't create certs)
+        -r "<service;location>" Redirect a hostname to a URL
+                    required arg: "<port>;<hostname>;<https://destination/URI>"
+                    <port> to listen on
+                    <hostname> to listen for (Fully Qualified Domain Name)
+                    <destination> where to send the requests
+        -s "<cert>" Configure SSL stapling
+                    required arg: cert(s) your CA uses for the OCSP check
+        -S ""       Configure SSL sessions
+                    possible arg: "[timeout]" - timeout for session reuse
+        -t ""       Configure timezone
+                    possible arg: "[timezone]" - zoneinfo timezone for container
+        -u "<service;location>" Configure UWSGI proxy and location
+                    required arg: "<server:port|unix:///path/to.sock>;</location>"
+                    <service> is how to contact UWSGI
+                    <location> is the URI in nginx (IE: /wiki)
+        -w "<service;location>" Configure web proxy and location
+                    required arg: "http://<server[:port]>;</location>"
+                    <service> is how to contact the HTTP service
+                    <location> is the URI in nginx (IE: /mediatomb)
+
+    The 'command' (if provided and valid) will be run instead of nginx
 
 For information on the syntax of the Nginx configuration files, see
 [the official documentation](http://nginx.org/en/docs/) (specifically the
