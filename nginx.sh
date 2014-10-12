@@ -151,6 +151,7 @@ Options (fields in '[]' are optional):
                 possible arg: \"[timeout]\" - timeout for session reuse
     -t \"\"       Configure timezone
                 possible arg: \"[timezone]\" - zoneinfo timezone for container
+    -q          quick (don't create certs)
 
 The 'command' (if provided and valid) will be run instead of nginx
 " >&2
@@ -166,6 +167,7 @@ while getopts ":hg:p:Hs:S:t:" opt; do
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
+        q) quick=1 ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
@@ -173,7 +175,7 @@ done
 shift $(( OPTIND - 1 ))
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
-[[ -d /etc/nginx/ssl ]] || gencert
+[[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
