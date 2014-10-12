@@ -104,6 +104,32 @@ ssi() {
         }' $file
 }
 
+### redirect: redirect to another host
+# Arguments:
+#   port) port to listen on
+#   hostname) where to listen
+#   destination) where to send the request
+# Return: hostname redirect added to config
+redirect() {
+    local port=$1
+    local hostname=$2
+    local destination=$3
+    local file=/etc/nginx/sites-available/default
+
+    sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
+\
+\
+server {\
+    listen '"$port"';\
+    server_name '"$hostname"';\
+'"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
+    ssl_certificate      /etc/nginx/ssl/cert.pem;\\
+    ssl_certificate_key  /etc/nginx/ssl/key.pem;')"'\
+    rewrite ^(.*) '"$destination"'$1 permanent;\
+}
+                ' $file
+}
+
 ### stapling: SSL stapling
 # Arguments:
 #   cert) full path to cert file
@@ -230,6 +256,11 @@ Options (fields in '[]' are optional, '<>' are required):
     -H          Configure HSTS (HTTP Strict Transport Security)
     -i          Enable SSI (Server Side Includes)
     -q          quick (don't create certs)
+    -r \"<service;location>\" Redirect a hostname to a URL
+                required arg: \"<port>;<hostname>;<https://destination/URI>\"
+                <port> to listen on
+                <hostname> to listen for (Fully Qualified Domain Name)
+                <destination> where to send the requests
     -s \"<cert>\" Configure SSL stapling
                 required arg: cert(s) your CA uses for the OCSP check
     -S \"\"       Configure SSL sessions
@@ -250,7 +281,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hg:p:PHis:S:t:u:w:q" opt; do
+while getopts ":hg:p:PHir:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         g) gencert $(sed 's/;/ /g' <<< $OPTARG) ;;
@@ -258,6 +289,7 @@ while getopts ":hg:p:PHis:S:t:u:w:q" opt; do
         P) prod ;;
         H) hsts ;;
         i) ssi ;;
+        r) redirect $(sed 's/;/ /g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
