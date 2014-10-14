@@ -80,16 +80,16 @@ browser.
 
     The 'command' (if provided and valid) will be run instead of nginx
 
-## Examples (all options can be run with either `docker run` or `docker start`
+## Examples
 
 Start nginx with your real CA certs and setup SSL stapling:
 
-    sudo docker run -it --name web -p 80:80 -p 443:443 -v /path/to/your/certs:/mnt:ro dperson/nginx -q bash
+    sudo docker run -it --name web -p 80:80 -p 443:443 -v /path/to/your/certs:/mnt:ro dperson/nginx -q -s "" bash
         cp /mnt/your.cert.file /etc/nginx/ssl/cert.pem
         cp /mnt/your.key.file /etc/nginx/ssl/key.pem
         cp /mnt/your.ocsp.file /etc/nginx/ssl/ocsp.pem
         exit
-    sudo docker start web -s ""
+    sudo docker start web
 
 Start a wiki running in an uwsgi container behind nginx:
 
