@@ -37,9 +37,9 @@ gencert() {
     local cert=$dir/cert.pem
     local key=$dir/key.pem
 
+    [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
 
-    [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
     openssl req -x509 -newkey rsa:2048 -keyout $key -out $cert -days 3600 \
         -nodes -subj "/C=$country/ST=$state/L=$locality/O=$org/CN=$domain"
 }
@@ -50,13 +50,15 @@ gencert() {
 # Return: setup PFS config
 pfs() {
     local compat=${1:-""}
-    local dh=/etc/nginx/ssl/dh2048.pem
+    local dir=/etc/nginx/ssl
     local file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
 
-    [[ -e $dh || $quick ]] || gencert
+    [[ -d $dir ]] || mkdir -p $dir
+
+    [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
 
     echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' > $file
-    echo 'ssl_dhparam '"$dh"';' >> $file
+    echo 'ssl_dhparam '"$dir/dh2048.pem"';' >> $file
     echo '' >> $file
     echo 'ssl_prefer_server_ciphers on;' >> $file
     if [[ -z $compat ]]; then
@@ -157,8 +159,9 @@ server {\
 #   cert) full path to cert file
 # Return: configure SSL stapling
 stapling() {
-    local cert=${1:-blank}
+    local dir=/etc/nginx/ssl
     local file=/etc/nginx/conf.d/stapling.conf
+    local cert=${1:-$dir/ocsp.pem}
 
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
@@ -274,6 +277,7 @@ Options (fields in '[]' are optional, '<>' are required):
                     org - company
     -p \"\"       Configure PFS (Perfect Forward Secrecy)
                 possible arg: \"[compat]\" - allow old insecure crypto
+                NOTE: DH keygen is slow
     -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
     -i          Enable SSI (Server Side Includes)
