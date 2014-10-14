@@ -311,19 +311,19 @@ The 'command' (if provided and valid) will be run instead of nginx
 while getopts ":hg:p:PHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
-        g) gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         p) pfs $OPTARG ;;
         P) prod ;;
         H) hsts ;;
         i) ssi ;;
-        n) name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        n) eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         q) quick=1 ;;
-        r) redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        r) eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
-        u) uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        w) proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
