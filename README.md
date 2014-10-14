@@ -2,9 +2,12 @@
 
 nginx docker instance
 
-## Fork of the main docker ["nginx"](https://registry.hub.docker.com/_/nginx/) - with the following changes:
+## Fork of the main docker ["nginx"](https://registry.hub.docker.com/_/nginx/)
+
+### With the following changes:
 
  * Based on Ubuntu
+ * Entrypoint script to take care of most normal configuration needs
  * Sets up a self-signed SSL cert
 
 # What is Nginx?
@@ -25,16 +28,17 @@ concept port for Microsoft Windows.
 
 # How to use this image
 
-## Hosting some simple static content
-
-    sudo docker run --name web -v /some/path:/usr/share/nginx/html:ro -d dperson/nginx
-
 ## Exposing the port
 
-    sudo docker run --name web -p 8080:80 -d dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx
 
-Then you can hit `http://localhost:8080` or `http://host-ip:8080` in your
+Then you can hit `http://hostname:8080` or `http://host-ip:8080` in your
 browser.
+
+## Hosting some local simple static content
+
+    sudo docker run --rm -p 80:80 -p 443:443 \
+                -v /some/path:/usr/share/nginx/html:ro dperson/nginx
 
 ## Complex configuration
 
@@ -82,50 +86,58 @@ browser.
 
 ## Examples
 
-Start nginx with your real CA certs and setup SSL stapling:
+### Start nginx with your real CA certs and setup SSL stapling:
 
-    sudo docker run -it --name web -p 80:80 -p 443:443 -v /path/to/your/certs:/mnt:ro dperson/nginx -q -s "" bash
+    sudo docker run -it --name web -p 80:80 -p 443:443 \
+                -v /path/to/your/certs:/mnt:ro dperson/nginx -q -s "" bash
         cp /mnt/your.cert.file /etc/nginx/ssl/cert.pem
         cp /mnt/your.key.file /etc/nginx/ssl/key.pem
         cp /mnt/your.ocsp.file /etc/nginx/ssl/ocsp.pem
         exit
     sudo docker start web
 
-Start a wiki running in an uwsgi container behind nginx:
+### Start a wiki running in an uwsgi container behind nginx:
 
     sudo docker run -d --name wiki dperson/moinmoin
-    sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki dperson/nginx -u "wiki:3031;/wiki"
+    sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki dperson/nginx \
+                -u "wiki:3031;/wiki"
 
-Start nginx with a redirect (nginx will listen on a port for the hostname, and redirect to a different URL (port;hostname;destination)):
+### Start nginx with a redirect:
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -r "80;myapp.example.com;https://myapp.herokuapp.com" -r "443;myapp.example.com;https://myapp.herokuapp.com"
+nginx will listen on a port for the hostname, and redirect to a different URL
+format (port;hostname;destination)
 
-Start nginx with a web proxy:
+    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx \
+                -r "80;myapp.example.com;https://myapp.herokuapp.com" \
+                -r "443;myapp.example.com;https://myapp.herokuapp.com"
+
+### Start nginx with a web proxy:
 
     sudo docker run --rm --name smokeping dperson/smokeping
-    sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping dperson/nginx -w "http://smokeping/smokeping;/smokeping"
+    sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping \
+                dperson/nginx -w "http://smokeping/smokeping;/smokeping"
 
-Start nginx with a specified zoneinfo timezone:
+### Start nginx with a specified zoneinfo timezone:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -t EST5EDT
 
-Start nginx with a defined hostname (instead of 'localhost'):
+### Start nginx with a defined hostname (instead of 'localhost'):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -n "example.com"
 
-Start nginx with server tokens disabled (Production mode):
+### Start nginx with server tokens disabled (Production mode):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -P
 
-Start nginx with SSI (Server Side Includes) enabled:
+### Start nginx with SSI (Server Side Includes) enabled:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -i
 
-Start nginx with PFS (Perfect Forward Secrecy) and HSTS (HTTP Strict Transport Security):
+### Start nginx with Perfect Forward Secrecy and HTTP Strict Transport Security:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -p "" -H
 
-Start nginx with SSL Sessions (better performance for clients):
+### Start nginx with SSL Sessions (better performance for clients):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -S ""
 
