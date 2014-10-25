@@ -27,14 +27,15 @@ basic() {
     local file=/etc/nginx/sites-available/default
 
     grep -q '^[^#]*location '"$loc" $file ||
-                sed -i '/location '"$loc"' /,/^    }/ { /^    }/a\
+                sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$loc"' {\
     }
         }' $file
 
-    sed -n '/location '"$loc"' /,/^    }/p' $file | grep -q auth_basic ||
-                sed -i '/location '"$loc"' /,/^    }/ { /^    }/i\
+    sed -n '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/p' $file |
+                grep -q auth_basic ||
+        sed -i '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/ { /^    }/i\
 \
         auth_basic           "restricted access";\
         auth_basic_user_file /etc/nginx/htpasswd;

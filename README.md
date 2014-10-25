@@ -90,12 +90,13 @@ browser.
 ## Examples
 
 Any of the commands can be run at creation with `docker run` or later with
-`docker exec` (as of version 1.3 of docker).
+`docker exec nginx.sh` (as of version 1.3 of docker).
 
 ### Start nginx with your real CA certs and setup SSL stapling:
 
     sudo docker run -it --name web -p 80:80 -p 443:443 \
-                -v /path/to/your/certs:/mnt:ro dperson/nginx -q -s "" bash
+                -v /path/to/your/certs:/mnt:ro -d dperson/nginx -q
+    sudo docker exec -it web nginx.sh -s "" bash
         cp /mnt/your.cert.file /etc/nginx/ssl/cert.pem
         cp /mnt/your.key.file /etc/nginx/ssl/key.pem
         cp /mnt/your.ocsp.file /etc/nginx/ssl/ocsp.pem
