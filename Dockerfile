@@ -7,7 +7,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
     echo "deb http://ppa.launchpad.net/nginx/stable/ubuntu trusty main" >> \
                 /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -qqy --no-install-recommends openssl nginx && \
+    apt-get install -qqy --no-install-recommends apache2-utils openssl nginx &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \

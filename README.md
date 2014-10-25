@@ -47,6 +47,9 @@ browser.
     Usage: nginx.sh [-opt] [command]
     Options (fields in '[]' are optional, '<>' are required):
         -h          This help
+        -b "[location]" Configure basic auth for "location"
+                    possible arg: [location] (defaults to '/')
+                    [location] is the URI in nginx (IE: /wiki)
         -g ""       Generate a selfsigned SSL cert
                     possible args: "[domain][;country][;state][;locality][;org]"
                         domain - FQDN for server
@@ -61,7 +64,7 @@ browser.
         -H          Configure HSTS (HTTP Strict Transport Security)
         -i          Enable SSI (Server Side Includes)
         -n          set server_name <name>[:oldname]
-        -q          quick (do not create certs)
+        -q          quick (don't create certs)
         -r "<service;location>" Redirect a hostname to a URL
                     required arg: "<port>;<hostname>;<https://destination/URI>"
                     <port> to listen on
@@ -85,6 +88,9 @@ browser.
     The 'command' (if provided and valid) will be run instead of nginx
 
 ## Examples
+
+Any of the commands can be run at creation with `docker run` or later with
+`docker exec` (as of version 1.3 of docker).
 
 ### Start nginx with your real CA certs and setup SSL stapling:
 

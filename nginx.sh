@@ -18,6 +18,29 @@
 
 set -o nounset                              # Treat unset variables as an error
 
+### basic: Basic Auth
+# Arguments:
+#   location) optional location for basic auth
+# Return: configure Basic Auth
+basic() {
+    local loc=${1:-\\/}
+    local file=/etc/nginx/sites-available/default
+
+    grep -q '^[^#]*location '"$loc" $file ||
+                sed -i '/location '"$loc"' /,/^    }/ { /^    }/a\
+\
+    location '"$loc"' {\
+    }
+        }' $file
+
+    sed -n '/location '"$loc"' /,/^    }/p' $file | grep -q auth_basic ||
+                sed -i '/location '"$loc"' /,/^    }/ { /^    }/i\
+\
+        auth_basic           "restricted access";\
+        auth_basic_user_file /etc/nginx/htpasswd;
+        }' $file
+}
+
 ### gencert: Generate SSL cert
 # Arguments:
 #   domain) FQDN for server
@@ -268,6 +291,9 @@ usage() {
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
+    -b \"[location]\" Configure basic auth for \"location\"
+                possible arg: [location] (defaults to '/')
+                [location] is the URI in nginx (IE: /wiki)
     -g \"\"       Generate a selfsigned SSL cert
                 possible args: \"[domain][;country][;state][;locality][;org]\"
                     domain - FQDN for server
@@ -308,9 +334,10 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hg:p:PHin:r:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:p:PHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
+        b) basic $OPTARG ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         p) pfs $OPTARG ;;
         P) prod ;;
