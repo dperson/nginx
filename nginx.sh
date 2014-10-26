@@ -25,6 +25,7 @@ set -o nounset                              # Treat unset variables as an error
 basic() {
     local loc=${1:-\\/}
     local file=/etc/nginx/sites-available/default
+    shift
 
     grep -q '^[^#]*location '"$loc" $file ||
                 sed -i '/location \/ /,/^    }/ { /^    }/a\
@@ -36,9 +37,13 @@ basic() {
     sed -n '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/p' $file |
                 grep -q auth_basic ||
         sed -i '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/ { /^    }/i\
-\
+'"$(for i; do
+    echo -e '        allow '"$i"';\'
+done; [[ ${1:-""} ]] && echo ' ')"'\
         auth_basic           "restricted access";\
-        auth_basic_user_file /etc/nginx/htpasswd;
+        auth_basic_user_file /etc/nginx/htpasswd;\
+\
+        satisfy any;
         }' $file
 }
 
@@ -292,9 +297,10 @@ usage() {
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
-    -b \"[location]\" Configure basic auth for \"location\"
+    -b \"[location][;IP]\" Configure basic auth for \"location\"
                 possible arg: [location] (defaults to '/')
                 [location] is the URI in nginx (IE: /wiki)
+                [;IP] addresses that don't have to authenticate
     -g \"\"       Generate a selfsigned SSL cert
                 possible args: \"[domain][;country][;state][;locality][;org]\"
                     domain - FQDN for server
@@ -338,7 +344,7 @@ The 'command' (if provided and valid) will be run instead of nginx
 while getopts ":hb:g:p:PHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
-        b) basic $OPTARG ;;
+        b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         p) pfs $OPTARG ;;
         P) prod ;;
