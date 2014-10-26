@@ -31,13 +31,14 @@ basic() {
                 sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$loc"' {\
+        try_files $uri $uri/ =404;\
     }
         }' $file
 
     sed -n '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/p' $file |
                 grep -q auth_basic ||
         sed -i '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/ { /^    }/i\
-'"$(for i; do
+'"$([[ ${1:-""} ]] && echo '\'; for i; do
     echo -e '        allow '"$i"';\'
 done; [[ ${1:-""} ]] && echo ' ')"'\
         auth_basic           "restricted access";\
@@ -177,7 +178,7 @@ server {\
     server_name '"$hostname"';\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/cert.pem;\\
-    ssl_certificate_key  /etc/nginx/ssl/key.pem;')"'\
+    ssl_certificate_key  /etc/nginx/ssl/key.pem;\\\n ')"'\
     rewrite ^(.*) '"$destination"'$1 permanent;\
 }
                 ' $file
