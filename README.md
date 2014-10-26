@@ -1,3 +1,5 @@
+![logo](https://raw.githubusercontent.com/docker-library/docs/master/nginx/logo.png)
+
 # nginx
 
 nginx docker instance
@@ -21,8 +23,6 @@ Solaris, AIX, HP-UX, as well as on other \*nix flavors. It also has a proof of
 concept port for Microsoft Windows.
 
 [wikipedia.org/wiki/Nginx](https://wikipedia.org/wiki/Nginx)
-
-![logo](https://raw.githubusercontent.com/docker-library/docs/master/nginx/logo.png)
 
 ---
 
