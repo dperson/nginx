@@ -153,7 +153,7 @@ name() {
 ssi() {
     local file=/etc/nginx/sites-available/default
 
-    sed -n '/location \/ /,/^    }/p' | grep -q ssi ||
+    sed -n '/location \/ /,/^    }/p' $file | grep -q ssi ||
         sed -i '/location \/ /,/^    }/ { /^    }/i\
 \
         ssi on;
