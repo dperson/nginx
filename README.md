@@ -2,7 +2,7 @@
 
 # nginx
 
-nginx docker instance
+nginx docker container
 
 ## Fork of the main docker ["nginx"](https://registry.hub.docker.com/_/nginx/)
 
@@ -61,7 +61,7 @@ browser.
                     possible arg: "[compat]" - allow old insecure crypto
                     NOTE: DH keygen is slow
         -P          Configure Production mode (no server tokens)
-        -H          Configure HSTS (HTTP Strict Transport Security)
+        -H          Configure HSTS (HTTPS Strict Transport Security)
         -i          Enable SSI (Server Side Includes)
         -n          set server_name <name>[:oldname]
         -q          quick (don't create certs)
@@ -73,7 +73,7 @@ browser.
         -s "<cert>" Configure SSL stapling
                     required arg: cert(s) your CA uses for the OCSP check
         -S ""       Configure SSL sessions
-                    possible arg: "[timeout]" - timeout for session reuse
+                    possible arg: "[timeout]" - timeout for session reuse, IE 5m
         -t ""       Configure timezone
                     possible arg: "[timezone]" - zoneinfo timezone for container
         -u "<service;location>" Configure UWSGI proxy and location
@@ -87,6 +87,23 @@ browser.
 
     The 'command' (if provided and valid) will be run instead of nginx
 
+ENVIROMENT VARIABLES (only available with `docker run`)
+
+ * `BASIC` - As above, setup basic auth for URI location, IE `/path`
+ * `GENCERT` - As above, make selfsigned SSL cert
+ * `PFS` - As above, configure Perfect Forward Secracy
+ * `PROD` - As above, production server flags
+ * `HSTS` - As above, HTTPS Strict Transport Security
+ * `SSI` - As above, setup basic auth for URI location, IE `/path`
+ * `NAME` - As above, set servername
+ * `OUICK` - As above, don't generate SSL cert
+ * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
+ * `STAPLING` - As above, configure SSL stapling
+ * `SSL_SESSIONS` - As above, setup SSL session reuse
+ * `TIMEZONE` - As above, set a zoneinfo timezone, IE `EST5EDT`
+ * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
+ * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
+
 ## Examples
 
 Any of the commands can be run at creation with `docker run` or later with
@@ -94,20 +111,34 @@ Any of the commands can be run at creation with `docker run` or later with
 
 ### Start nginx with your real CA certs and setup SSL stapling:
 
-    sudo docker run -it --name web -p 80:80 -p 443:443 \
-                -v /path/to/your/certs:/mnt:ro -d dperson/nginx -q
-    sudo docker exec -it web nginx.sh -s "" bash
-        cp /mnt/your.cert.file /etc/nginx/ssl/cert.pem
-        cp /mnt/your.key.file /etc/nginx/ssl/key.pem
-        cp /mnt/your.ocsp.file /etc/nginx/ssl/ocsp.pem
-        exit
-    sudo docker start web
+    sudo docker run -it --name web -p 80:80 -p 443:443 -d dperson/nginx -q
+    sudo docker exec -it web nginx.sh -q -s echo Stapling configured
+
+Will get you the same settings as
+
+    sudo docker run -it --name web -p 80:80 -p 443:443 -d dperson/nginx -q -s
+
+Then run
+
+    cat /path/to/your.cert.file | \
+                sudo docker exec -it web tee /etc/nginx/ssl/cert.pem
+    cat /path/to/your.key.file | \
+                sudo docker exec -it web tee /etc/nginx/ssl/key.pem
+    cat /path/to/your.ocsp.file | \
+                sudo docker exec -it web tee /etc/nginx/ssl/ocsp.pem
+    sudo docker restart web
 
 ### Start a wiki running in an uwsgi container behind nginx:
 
     sudo docker run -d --name wiki dperson/moinmoin
     sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki dperson/nginx \
                 -u "wiki:3031;/wiki"
+
+OR
+
+    sudo docker run -d --name wiki dperson/moinmoin
+    sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki \
+                -e UWSGI="wiki:3031;/wiki" dperson/nginx
 
 ### Start nginx with a redirect:
 
@@ -118,35 +149,67 @@ format (port;hostname;destination)
                 -r "80;myapp.example.com;https://myapp.herokuapp.com" \
                 -r "443;myapp.example.com;https://myapp.herokuapp.com"
 
+ENVIRONMENT variables don't support multiple values, use args as above
+
 ### Start nginx with a web proxy:
 
     sudo docker run --rm --name smokeping dperson/smokeping
     sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping \
                 dperson/nginx -w "http://smokeping/smokeping;/smokeping"
 
+OR
+
+    sudo docker run --rm --name smokeping dperson/smokeping
+    sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping \
+                 -e PROXY="http://smokeping/smokeping;/smokeping" dperson/nginx
+
 ### Start nginx with a specified zoneinfo timezone:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -t EST5EDT
+
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e TIMEZONE=EST5EDT dperson/nginx
 
 ### Start nginx with a defined hostname (instead of 'localhost'):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -n "example.com"
 
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e NAME="example.com" dperson/nginx
+
 ### Start nginx with server tokens disabled (Production mode):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -P
+
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e PROD=y dperson/nginx
 
 ### Start nginx with SSI (Server Side Includes) enabled:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -i
 
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e SSI=y dperson/nginx
+
 ### Start nginx with Perfect Forward Secrecy and HTTP Strict Transport Security:
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -p "" -H
 
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e PFS=1 -e HSTS=y dperson/nginx
+
 ### Start nginx with SSL Sessions (better performance for clients):
 
     sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -S ""
+
+OR
+
+    sudo docker run --rm -p 80:80 -p 443:443 -e SSL_SESSIONS=5m dperson/nginx
 
 ---
 

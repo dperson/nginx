@@ -28,7 +28,7 @@ basic() {
     shift
 
     grep -q '^[^#]*location '"$loc" $file ||
-                sed -i '/location \/ /,/^    }/ { /^    }/a\
+        sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$loc"' {\
         try_files $uri $uri/ =404;\
@@ -36,7 +36,7 @@ basic() {
     }
         }' $file
 
-    sed -n '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/p' $file |
+    sed -n '/location '"$(sed 's|/|\\/|g' <<< $loc)"' /,/^    }/p' $file |
                 grep -q auth_basic ||
         sed -i '/location '"$(sed 's|/|\\/|' <<< $loc)"' /,/^    }/ { /^    }/i\
 '"$([[ ${1:-""} ]] && echo '\'; for i; do
@@ -92,7 +92,7 @@ pfs() {
     echo 'ssl_dhparam '"$dir/dh2048.pem"';' >> $file
     echo '' >> $file
     echo 'ssl_prefer_server_ciphers on;' >> $file
-    if [[ -z $compat ]]; then
+    if [[ -z $compat || "$compat" == "1" ]]; then
         echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >> $file
         echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >> $file
     else
@@ -153,7 +153,8 @@ name() {
 ssi() {
     local file=/etc/nginx/sites-available/default
 
-    sed -i '/location \/ /,/^    }/ { /^    }/i\
+    sed -n '/location \/ /,/^    }/p' | grep -q ssi ||
+        sed -i '/location \/ /,/^    }/ { /^    }/i\
 \
         ssi on;
         }' $file
@@ -171,7 +172,8 @@ redirect() {
     local destination=$3
     local file=/etc/nginx/sites-available/default
 
-    sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
+    sed -n '/listen/ {N; s/\n//; p}' $file | grep -q " $port;.* $hostname;" ||
+        sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
 \
 \
 server {\
@@ -242,14 +244,17 @@ uwsgi() {
     local location=$2
     local file=/etc/nginx/sites-available/default
 
-    sed -i '/proxy_cache_path/,/^$/ { /^$/a\
+    grep -q 'upstream uwsgicluster' $file ||
+        sed -i '/proxy_cache_path/,/^$/ { /^$/a\
 \
 upstream uwsgicluster {\
     server '"$service"';\
 }\
 
         }' $file
-    sed -i '/location \/ /,/^    }/ { /^    }/a\
+
+    grep -q "location $location {" $file ||
+        sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$location"' {\
         proxy_cache_valid any 1m;\
@@ -273,7 +278,8 @@ proxy() {
     local location=$2
     local file=/etc/nginx/sites-available/default
 
-    sed -i '/location \/ /,/^    }/ { /^    }/a\
+    grep -q "location $location {" $file ||
+        sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$location"' {\
         proxy_pass       '"$service"';\
@@ -367,6 +373,21 @@ while getopts ":hb:g:p:PHin:r:s:S:t:u:w:q" opt; do
     esac
 done
 shift $(( OPTIND - 1 ))
+
+[[ "$BASIC" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "$GENCERT" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "$PFS" ]] && pfs $OPTARG
+[[ "$PROD" ]] && prod
+[[ "$HSTS" ]] && hsts
+[[ "$SSI" ]] && ssi
+[[ "$NAME" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "$OUICK" ]] && quick=1
+[[ "$REDIRECT" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "$STAPLING" ]] && stapling $OPTARG
+[[ "$SSL_SESSIONS" ]] && ssl_sessions $OPTARG
+[[ "$TIMEZONE" ]] && timezone $OPTARG
+[[ "$USWGI" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "$PROXY" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
