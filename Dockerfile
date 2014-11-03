@@ -2,11 +2,13 @@ FROM ubuntu:trusty
 MAINTAINER David Personette <dperson@dperson.com>
 
 # Install nginx and uwsgi
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
+RUN export TERM=dumb && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys \
                 00A6F0A3C300EE8C && \
-    echo "deb http://ppa.launchpad.net/nginx/stable/ubuntu trusty main" >> \
+    echo -n "deb http://ppa.launchpad.net/nginx/stable/ubuntu" >> \
                 /etc/apt/sources.list && \
-    apt-get update && \
+    echo " $(lsb_release -cs) main" >> /etc/apt/sources.list && \
+    apt-get update -qq && \
     apt-get install -qqy --no-install-recommends apache2-utils openssl nginx &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
