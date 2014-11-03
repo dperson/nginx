@@ -374,20 +374,22 @@ while getopts ":hb:g:p:PHin:r:s:S:t:u:w:q" opt; do
 done
 shift $(( OPTIND - 1 ))
 
-[[ "$BASIC" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
-[[ "$GENCERT" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
-[[ "$PFS" ]] && pfs $OPTARG
-[[ "$PROD" ]] && prod
-[[ "$HSTS" ]] && hsts
-[[ "$SSI" ]] && ssi
-[[ "$NAME" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
-[[ "$OUICK" ]] && quick=1
-[[ "$REDIRECT" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
-[[ "$STAPLING" ]] && stapling $OPTARG
-[[ "$SSL_SESSIONS" ]] && ssl_sessions $OPTARG
-[[ "$TIMEZONE" ]] && timezone $OPTARG
-[[ "$USWGI" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
-[[ "$PROXY" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG)
+[[ "${BASIC:-""}" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $BASIC)
+[[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+            $GENCERT)
+[[ "${PFS:-""}" ]] && pfs $PFS
+[[ "${PROD:-""}" ]] && prod
+[[ "${HSTS:-""}" ]] && hsts
+[[ "${SSI:-""}" ]] && ssi
+[[ "${NAME:-""}" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $NAME)
+[[ "${OUICK:-""}" ]] && quick=1
+[[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+            $REDIRECT)
+[[ "${STAPLING:-""}" ]] && stapling $STAPLING
+[[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
+[[ "${TIMEZONE:-""}" ]] && timezone $TIMEZONE
+[[ "${USWGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
+[[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
