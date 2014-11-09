@@ -35,7 +35,7 @@ server {
     ssl_certificate      /etc/nginx/ssl/cert.pem;
     ssl_certificate_key  /etc/nginx/ssl/key.pem;
 
-    root /usr/share/nginx/html;
+    root /srv/www;
     index index.html index.htm;
 
     # Make site accessible from http://localhost/
@@ -74,7 +74,7 @@ server {
     #
     #error_page 500 502 503 504 /50x.html;
     #location = /50x.html {
-    #    root /usr/share/nginx/html;
+    #    root /srv/www;
     #}
 }
 
@@ -84,7 +84,7 @@ server {
     # listen [::]:80 default_server ipv6only=on;
     proxy_cache mmcache;
 
-    root /usr/share/nginx/html;
+    root /srv/www;
     index index.html index.htm;
 
     # Make site accessible from http://localhost/
@@ -102,7 +102,7 @@ server {
     #
     #error_page 500 502 503 504 /50x.html;
     #location = /50x.html {
-    #   root /usr/share/nginx/html;
+    #   root /srv/www;
     #}
 }
 

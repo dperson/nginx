@@ -38,7 +38,7 @@ browser.
 ## Hosting some local simple static content
 
     sudo docker run --rm -p 80:80 -p 443:443 \
-                -v /some/path:/usr/share/nginx/html:ro dperson/nginx
+                -v /some/path:/srv/www:ro dperson/nginx
 
 ## Complex configuration
 

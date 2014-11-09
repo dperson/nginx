@@ -20,7 +20,7 @@ RUN export TERM=dumb && \
 COPY default /etc/nginx/sites-available/
 COPY nginx.sh /usr/bin/
 
-VOLUME ["/usr/share/nginx/html", "/etc/nginx"]
+VOLUME ["/srv/www", "/etc/nginx"]
 
 EXPOSE 80 443
 
