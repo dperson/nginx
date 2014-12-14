@@ -11,7 +11,7 @@ RUN TERM=dumb apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys\
     TERM=dumb apt-get install -qqy --no-install-recommends apache2-utils \
                 openssl nginx && \
     TERM=dumb apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/lib/apt/lists/* /tmp/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector

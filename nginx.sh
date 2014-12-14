@@ -287,12 +287,18 @@ proxy() {
         proxy_set_header X-Real-IP $remote_addr;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
 \
+        ## Caching for speed\
         proxy_buffering on;\
         proxy_buffers 8 4k;\
         proxy_busy_buffers_size 8k;\
-\
         proxy_cache_valid any 1m;\
         proxy_cache_min_uses 3;\
+\
+        ## Required for websockets\
+        proxy_http_version 1.1;\
+        proxy_set_header Upgrade $http_upgrade;\
+        proxy_set_header Connection "upgrade";\
+        proxy_read_timeout 600s;\
     }
         }' $file
 }
