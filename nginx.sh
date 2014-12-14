@@ -77,10 +77,9 @@ gencert() {
 
 ### pfs: Perfect Forward Secrecy
 # Arguments:
-#   compat) Allow crusty old crypto
+#   none)
 # Return: setup PFS config
 pfs() {
-    local compat=${1:-""}
     local dir=/etc/nginx/ssl
     local file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
 
@@ -91,14 +90,11 @@ pfs() {
     echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' > $file
     echo 'ssl_dhparam '"$dir/dh2048.pem"';' >> $file
     echo '' >> $file
-    echo 'ssl_prefer_server_ciphers on;' >> $file
-    if [[ -z $compat || "$compat" == "1" ]]; then
+    grep -rq ssl_prefer_server_ciphers /etc/nginx ||
+        echo 'ssl_prefer_server_ciphers on;' >> $file
+    grep -rq ssl_protocols /etc/nginx ||
         echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >> $file
-        echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >> $file
-    else
-        echo "ssl_protocols SSLv3, TLSv1, TLSv1.1, TLSv1.2;" >> $file
-        echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128:AES256:AES:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK';" >> $file
-    fi
+    echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >> $file
 }
 
 ### prod: Production mode
@@ -325,7 +321,6 @@ Options (fields in '[]' are optional, '<>' are required):
                     locality - city
                     org - company
     -p \"\"       Configure PFS (Perfect Forward Secrecy)
-                possible arg: \"[compat]\" - allow old insecure crypto
                 NOTE: DH keygen is slow
     -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
@@ -357,12 +352,12 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:g:p:PHin:r:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:pPHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        p) pfs $OPTARG ;;
+        p) pfs ;;
         P) prod ;;
         H) hsts ;;
         i) ssi ;;
@@ -383,7 +378,7 @@ shift $(( OPTIND - 1 ))
 [[ "${BASIC:-""}" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $BASIC)
 [[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $GENCERT)
-[[ "${PFS:-""}" ]] && pfs $PFS
+[[ "${PFS:-""}" ]] && pfs
 [[ "${PROD:-""}" ]] && prod
 [[ "${HSTS:-""}" ]] && hsts
 [[ "${SSI:-""}" ]] && ssi
