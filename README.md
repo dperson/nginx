@@ -57,8 +57,7 @@ browser.
                         state - state of server location
                         locality - city
                         org - company
-        -p ""       Configure PFS (Perfect Forward Secrecy)
-                    possible arg: "[compat]" - allow old insecure crypto
+        -p          Configure PFS (Perfect Forward Secrecy)
                     NOTE: DH keygen is slow
         -P          Configure Production mode (no server tokens)
         -H          Configure HSTS (HTTPS Strict Transport Security)
@@ -197,7 +196,7 @@ OR
 
 ### Start nginx with Perfect Forward Secrecy and HTTP Strict Transport Security:
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -p "" -H
+    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -p -H
 
 OR
 
