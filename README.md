@@ -30,7 +30,7 @@ concept port for Microsoft Windows.
 
 ## Exposing the port
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx
 
 Then you can hit `http://hostname:8080` or `http://host-ip:8080` in your
 browser.
@@ -38,11 +38,11 @@ browser.
 ## Hosting some local simple static content
 
     sudo docker run --rm -p 80:80 -p 443:443 \
-                -v /some/path:/srv/www:ro dperson/nginx
+                -v /some/path:/srv/www:ro -d dperson/nginx
 
 ## Complex configuration
 
-    sudo docker run -it --rm dperson/nginx -h
+    sudo docker run -it --rm -d dperson/nginx -h
 
     Usage: nginx.sh [-opt] [command]
     Options (fields in '[]' are optional, '<>' are required):
@@ -129,22 +129,22 @@ Then run
 
 ### Start a wiki running in an uwsgi container behind nginx:
 
-    sudo docker run -d --name wiki dperson/moinmoin
-    sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki dperson/nginx \
+    sudo docker run --name wiki -d dperson/moinmoin
+    sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki -d dperson/nginx \
                 -u "wiki:3031;/wiki"
 
 OR
 
-    sudo docker run -d --name wiki dperson/moinmoin
+    sudo docker run --name wiki -d dperson/moinmoin
     sudo docker run --rm -p 80:80 -p 443:443 --link wiki:wiki \
-                -e UWSGI="wiki:3031;/wiki" dperson/nginx
+                -e UWSGI="wiki:3031;/wiki" -d dperson/nginx
 
 ### Start nginx with a redirect:
 
 nginx will listen on a port for the hostname, and redirect to a different URL
 format (port;hostname;destination)
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx \
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx \
                 -r "80;myapp.example.com;https://myapp.herokuapp.com" \
                 -r "443;myapp.example.com;https://myapp.herokuapp.com"
 
@@ -152,63 +152,65 @@ ENVIRONMENT variables don't support multiple values, use args as above
 
 ### Start nginx with a web proxy:
 
-    sudo docker run --rm --name smokeping dperson/smokeping
+    sudo docker run --rm --name smokeping -d dperson/smokeping
     sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping \
-                dperson/nginx -w "http://smokeping/smokeping;/smokeping"
+                -d dperson/nginx -w "http://smokeping/smokeping;/smokeping"
 
 OR
 
-    sudo docker run --rm --name smokeping dperson/smokeping
+    sudo docker run --rm --name smokeping -d dperson/smokeping
     sudo docker run --rm -p 80:80 -p 443:443 --link smokeping:smokeping \
-                 -e PROXY="http://smokeping/smokeping;/smokeping" dperson/nginx
+                 -e PROXY="http://smokeping/smokeping;/smokeping" \
+                 -d dperson/nginx
 
 ### Start nginx with a specified zoneinfo timezone:
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -t EST5EDT
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -t EST5EDT
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e TIMEZONE=EST5EDT dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e TIMEZONE=EST5EDT -d dperson/nginx
 
 ### Start nginx with a defined hostname (instead of 'localhost'):
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -n "example.com"
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -n "example.com"
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e NAME="example.com" dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e NAME="example.com" -d \
+                dperson/nginx
 
 ### Start nginx with server tokens disabled (Production mode):
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -P
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -P
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e PROD=y dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e PROD=y -d dperson/nginx
 
 ### Start nginx with SSI (Server Side Includes) enabled:
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -i
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -i
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e SSI=y dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e SSI=y -d dperson/nginx
 
 ### Start nginx with Perfect Forward Secrecy and HTTP Strict Transport Security:
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -p -H
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -p -H
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e PFS=1 -e HSTS=y dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e PFS=1 -e HSTS=y -d dperson/nginx
 
 ### Start nginx with SSL Sessions (better performance for clients):
 
-    sudo docker run --rm -p 80:80 -p 443:443 dperson/nginx -S ""
+    sudo docker run --rm -p 80:80 -p 443:443 -d dperson/nginx -S ""
 
 OR
 
-    sudo docker run --rm -p 80:80 -p 443:443 -e SSL_SESSIONS=5m dperson/nginx
+    sudo docker run --rm -p 80:80 -p 443:443 -e SSL_SESSIONS=5m -d dperson/nginx
 
 ---
 

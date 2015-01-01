@@ -240,26 +240,21 @@ uwsgi() {
     local location=$2
     local file=/etc/nginx/sites-available/default
 
-    grep -q 'upstream uwsgicluster' $file ||
-        sed -i '/proxy_cache_path/,/^$/ { /^$/a\
-\
-upstream uwsgicluster {\
-    server '"$service"';\
-}\
-
-        }' $file
-
     grep -q "location $location {" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$location"' {\
-        proxy_cache_valid any 1m;\
-        proxy_cache_min_uses 3;\
-\
-        uwsgi_pass uwsgicluster;\
+        uwsgi_pass '"$service"';\
         uwsgi_param SCRIPT_NAME '"$location"';\
         include uwsgi_params;\
         uwsgi_modifier1 30;\
+\
+        ## Caching for speed\
+        proxy_buffering on;\
+        proxy_buffers 8 4k;\
+        proxy_busy_buffers_size 8k;\
+        proxy_cache_valid any 1m;\
+        proxy_cache_min_uses 3;\
     }
         }' $file
 }
