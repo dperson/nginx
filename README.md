@@ -120,11 +120,11 @@ Will get you the same settings as
 Then run
 
     cat /path/to/your.cert.file | \
-                sudo docker exec -it web tee /etc/nginx/ssl/cert.pem
+                sudo docker exec -i web tee /etc/nginx/ssl/cert.pem
     cat /path/to/your.key.file | \
-                sudo docker exec -it web tee /etc/nginx/ssl/key.pem
+                sudo docker exec -i web tee /etc/nginx/ssl/key.pem
     cat /path/to/your.ocsp.file | \
-                sudo docker exec -it web tee /etc/nginx/ssl/ocsp.pem
+                sudo docker exec -i web tee /etc/nginx/ssl/ocsp.pem
     sudo docker restart web
 
 ### Start a wiki running in an uwsgi container behind nginx:
