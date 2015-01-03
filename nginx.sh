@@ -22,9 +22,7 @@ set -o nounset                              # Treat unset variables as an error
 # Arguments:
 #   location) optional location for basic auth
 # Return: configure Basic Auth
-basic() {
-    local loc=${1:-\\/}
-    local file=/etc/nginx/sites-available/default
+basic() { local loc=${1:-\\/} file=/etc/nginx/sites-available/default
     shift
 
     grep -q '^[^#]*location '"$loc" $file ||
@@ -57,17 +55,9 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 #   locality) city
 #   org) company
 # Return: self-signed certs will be generated
-gencert() {
-    local domain=${1:-*}
-    local country=${2:-NO}
-    local state=${3:-Rogaland}
-    local locality=${4:-Sola}
-    local org=${5:-None}
-
-    local dir=/etc/nginx/ssl
-    local cert=$dir/cert.pem
-    local key=$dir/key.pem
-
+gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
+            locality=${4:-Sola} org=${5:-None} \
+            dir=/etc/nginx/ssl cert=$dir/cert.pem key=$dir/key.pem
     [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
 
@@ -79,10 +69,8 @@ gencert() {
 # Arguments:
 #   none)
 # Return: setup PFS config
-pfs() {
-    local dir=/etc/nginx/ssl
-    local file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
-
+pfs() { local dir=/etc/nginx/ssl \
+            file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
     [[ -d $dir ]] || mkdir -p $dir
 
     [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
@@ -101,9 +89,7 @@ pfs() {
 # Arguments:
 #   none)
 # Return: Turn off server tokens
-prod() {
-    local file=/etc/nginx/nginx.conf
-
+prod() { local file=/etc/nginx/nginx.conf
     sed -i '/# server_tokens/s/# //' $file
 }
 
@@ -111,10 +97,8 @@ prod() {
 # Arguments:
 #   none)
 # Return: configure HSTS
-hsts() {
-    local file=/etc/nginx/conf.d/hsts.conf
-    local file2=/etc/nginx/sites-available/default
-
+hsts() { local file=/etc/nginx/conf.d/hsts.conf \
+            file2=/etc/nginx/sites-available/default
     cat > $file << EOF
 # HTTP Strict Transport Security (HSTS)
 add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
@@ -134,11 +118,8 @@ EOF
 #   name) new server name
 #   oldname) old name to change from (defaults to localhost)
 # Return: configure server_name
-name() {
-    local name=$1
-    local oldname=${2:-localhost}
-    local file=/etc/nginx/sites-available/default
-
+name() { local name=$1 oldname=${2:-localhost} \
+            file=/etc/nginx/sites-available/default
     sed -i 's/\(^ *server_name\) '"$oldname"';/\1 '"$name"';/' $file
 }
 
@@ -146,9 +127,7 @@ name() {
 # Arguments:
 #   none)
 # Return: configure SSI
-ssi() {
-    local file=/etc/nginx/sites-available/default
-
+ssi() { local file=/etc/nginx/sites-available/default
     sed -n '/location \/ /,/^    }/p' $file | grep -q ssi ||
         sed -i '/location \/ /,/^    }/ { /^    }/i\
 \
@@ -162,12 +141,8 @@ ssi() {
 #   hostname) where to listen
 #   destination) where to send the request
 # Return: hostname redirect added to config
-redirect() {
-    local port=$1
-    local hostname=$2
-    local destination=$3
-    local file=/etc/nginx/sites-available/default
-
+redirect() { local port=$1 hostname=$2 destination=$3 \
+            file=/etc/nginx/sites-available/default
     sed -n '/listen/ {N; s/\n//; p}' $file | grep -q " $port;.* $hostname;" ||
         sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
 \
@@ -187,11 +162,8 @@ server {\
 # Arguments:
 #   cert) full path to cert file
 # Return: configure SSL stapling
-stapling() {
-    local dir=/etc/nginx/ssl
-    local file=/etc/nginx/conf.d/stapling.conf
-    local cert=${1:-$dir/ocsp.pem}
-
+stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf \
+            cert=${1:-$dir/ocsp.pem}
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
     echo '# OCSP (Online Certificate Status Protocol) SSL stapling' > $file
@@ -206,10 +178,7 @@ stapling() {
 # Arguments:
 #   timeout) how long to keep the session open
 # Return: configure SSL sessions
-ssl_sessions() {
-    local timeout="${1:-5m}"
-    local file=/etc/nginx/conf.d/sessions.conf
-
+ssl_sessions() { local timeout="${1:-5m}" file=/etc/nginx/conf.d/sessions.conf
     echo '# Session resumption (caching)' > $file
     echo 'ssl_session_cache shared:SSL:50m;' >> $file
     echo "ssl_session_timeout $timeout;" >> $file
@@ -219,9 +188,7 @@ ssl_sessions() {
 # Arguments:
 #   timezone) for example EST5EDT
 # Return: the correct zoneinfo file will be symlinked into place
-timezone() {
-    local timezone="${1:-EST5EDT}"
-
+timezone() { local timezone="${1:-EST5EDT}"
     [[ -e /usr/share/zoneinfo/$timezone ]] || {
         echo "ERROR: invalid timezone specified" >&2
         return
@@ -235,11 +202,7 @@ timezone() {
 #   service) where to contact UWSGI
 #   location) URI in web server
 # Return: UWSGI added to the config file
-uwsgi() {
-    local service=$1
-    local location=$2
-    local file=/etc/nginx/sites-available/default
-
+uwsgi() { local service=$1 location=$2 file=/etc/nginx/sites-available/default
     grep -q "location $location {" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
@@ -264,11 +227,7 @@ uwsgi() {
 #   service) where to contact HTTP service
 #   location) URI in web server
 # Return: proxy added to the config file
-proxy() {
-    local service=$1
-    local location=$2
-    local file=/etc/nginx/sites-available/default
-
+proxy() { local service=$1 location=$2 file=/etc/nginx/sites-available/default
     grep -q "location $location {" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
@@ -298,9 +257,7 @@ proxy() {
 # Arguments:
 #   none)
 # Return: Help text
-usage() {
-    local RC=${1:-0}
-
+usage() { local RC=${1:-0}
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
