@@ -162,8 +162,9 @@ server {\
 # Arguments:
 #   cert) full path to cert file
 # Return: configure SSL stapling
-stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf \
-            cert=${1:-$dir/ocsp.pem}
+stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
+    local cert=${1:-$dir/ocsp.pem}
+
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
     echo '# OCSP (Online Certificate Status Protocol) SSL stapling' > $file
