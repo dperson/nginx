@@ -3,7 +3,7 @@ MAINTAINER David Personette <dperson@dperson.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Install nginx and uwsgi
+# Install nginx
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys\
                 00A6F0A3C300EE8C && \
     echo -n "deb http://ppa.launchpad.net/nginx/stable/ubuntu" >> \
@@ -17,7 +17,6 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys\
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector
 
-# Configure
 COPY default /etc/nginx/sites-available/
 COPY nginx.sh /usr/bin/
 
