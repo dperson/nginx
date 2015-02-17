@@ -1,14 +1,13 @@
-FROM ubuntu:trusty
+FROM debian:jesse
 MAINTAINER David Personette <dperson@dperson.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install nginx
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys\
-                00A6F0A3C300EE8C && \
-    echo -n "deb http://ppa.launchpad.net/nginx/stable/ubuntu" >> \
+RUN apt-key adv --keyserver pgp.mit.edu --recv-keys \
+                573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62&& \
+    echo -n "deb http://nginx.org/packages/mainline/debian/ jesse nginx" >> \
                 /etc/apt/sources.list && \
-    echo " $(lsb_release -cs) main" >> /etc/apt/sources.list && \
     apt-get update -qq && \
     apt-get install -qqy --no-install-recommends apache2-utils openssl nginx &&\
     apt-get clean && \
@@ -17,7 +16,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys\
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector
 
-COPY default /etc/nginx/sites-available/
+#COPY default /etc/nginx/sites-available/
 COPY nginx.sh /usr/bin/
 
 VOLUME ["/srv/www", "/etc/nginx"]

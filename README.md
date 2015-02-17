@@ -8,7 +8,6 @@ nginx docker container
 
 ### With the following changes:
 
- * Based on Ubuntu
  * Entrypoint script to take care of most normal configuration needs
  * Sets up a self-signed SSL cert
 
