@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:weezy
 MAINTAINER David Personette <dperson@dperson.com>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install nginx
 RUN apt-key adv --keyserver pgp.mit.edu --recv-keys \
                 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62&& \
-    echo -n "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> \
+    echo -n "deb http://nginx.org/packages/mainline/debian/ weezy nginx" >> \
                 /etc/apt/sources.list && \
     apt-get update -qq && \
     apt-get install -qqy --no-install-recommends apache2-utils openssl nginx &&\
