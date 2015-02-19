@@ -16,7 +16,7 @@ RUN apt-key adv --keyserver pgp.mit.edu --recv-keys \
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector
 
-#COPY default /etc/nginx/sites-available/
+COPY default.conf /etc/nginx/conf.d/
 COPY nginx.sh /usr/bin/
 
 VOLUME ["/srv/www", "/etc/nginx"]

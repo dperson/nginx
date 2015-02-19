@@ -22,7 +22,7 @@ set -o nounset                              # Treat unset variables as an error
 # Arguments:
 #   location) optional location for basic auth
 # Return: configure Basic Auth
-basic() { local loc=${1:-\\/} file=/etc/nginx/sites-available/default
+basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
     shift
 
     grep -q '^[^#]*location '"$loc" $file ||
@@ -98,7 +98,7 @@ prod() { local file=/etc/nginx/nginx.conf
 #   none)
 # Return: configure HSTS
 hsts() { local file=/etc/nginx/conf.d/hsts.conf \
-            file2=/etc/nginx/sites-available/default
+            file2=/etc/nginx/conf.d/default.conf
     cat > $file << EOF
 # HTTP Strict Transport Security (HSTS)
 add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
@@ -119,7 +119,7 @@ EOF
 #   oldname) old name to change from (defaults to localhost)
 # Return: configure server_name
 name() { local name=$1 oldname=${2:-localhost} \
-            file=/etc/nginx/sites-available/default
+            file=/etc/nginx/conf.d/default.conf
     sed -i 's/\(^ *server_name\) '"$oldname"';/\1 '"$name"';/' $file
 }
 
@@ -127,7 +127,7 @@ name() { local name=$1 oldname=${2:-localhost} \
 # Arguments:
 #   none)
 # Return: configure SSI
-ssi() { local file=/etc/nginx/sites-available/default
+ssi() { local file=/etc/nginx/conf.d/default.conf
     sed -n '/location \/ /,/^    }/p' $file | grep -q ssi ||
         sed -i '/location \/ /,/^    }/ { /^    }/i\
 \
@@ -142,7 +142,7 @@ ssi() { local file=/etc/nginx/sites-available/default
 #   destination) where to send the request
 # Return: hostname redirect added to config
 redirect() { local port=$1 hostname=$2 destination=$3 \
-            file=/etc/nginx/sites-available/default
+            file=/etc/nginx/conf.d/default.conf
     sed -n '/listen/ {N; s/\n//; p}' $file | grep -q " $port;.* $hostname;" ||
         sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
 \
@@ -203,7 +203,7 @@ timezone() { local timezone="${1:-EST5EDT}"
 #   service) where to contact UWSGI
 #   location) URI in web server
 # Return: UWSGI added to the config file
-uwsgi() { local service=$1 location=$2 file=/etc/nginx/sites-available/default
+uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
     grep -q "location $location {" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
@@ -228,7 +228,7 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/sites-available/default
 #   service) where to contact HTTP service
 #   location) URI in web server
 # Return: proxy added to the config file
-proxy() { local service=$1 location=$2 file=/etc/nginx/sites-available/default
+proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
     grep -q "location $location {" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
