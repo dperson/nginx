@@ -1,10 +1,9 @@
 FROM debian:jessie
 MAINTAINER David Personette <dperson@dperson.com>
 
-ENV DEBIAN_FRONTEND noninteractive
-
 # Install nginx
-RUN apt-key adv --keyserver pgp.mit.edu --recv-keys \
+RUN export DEBIAN_FRONTEND='noninteractive' && \
+    apt-key adv --keyserver pgp.mit.edu --recv-keys \
                 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62&& \
     echo -n "deb http://nginx.org/packages/mainline/debian/ wheezy nginx" >> \
                 /etc/apt/sources.list && \
