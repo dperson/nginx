@@ -49,6 +49,8 @@ browser.
         -b "[location]" Configure basic auth for "location"
                     possible arg: [location] (defaults to '/')
                     [location] is the URI in nginx (IE: /wiki)
+        -e ""       Configure EXPIRES header on static assets
+                    possible arg: "[timeout]" - timeout for cached files
         -g ""       Generate a selfsigned SSL cert
                     possible args: "[domain][;country][;state][;locality][;org]"
                         domain - FQDN for server
@@ -88,6 +90,7 @@ browser.
 ENVIROMENT VARIABLES (only available with `docker run`)
 
  * `BASIC` - As above, setup basic auth for URI location, IE `/path`
+ * `EXPIRES` - As above, Configure EXPIRES header on static assets
  * `GENCERT` - As above, make selfsigned SSL cert
  * `PFS` - As above, configure Perfect Forward Secracy
  * `PROD` - As above, production server flags

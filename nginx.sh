@@ -158,6 +158,16 @@ server {\
                 ' $file
 }
 
+### ssl_sessions: Setup SSL session resumption
+# Arguments:
+#   timeout) how long to keep the session open
+# Return: configure SSL sessions
+ssl_sessions() { local timeout="${1:-5m}" file=/etc/nginx/conf.d/sessions.conf
+    echo '# Session resumption (caching)' > $file
+    echo 'ssl_session_cache shared:SSL:50m;' >> $file
+    echo "ssl_session_timeout $timeout;" >> $file
+}
+
 ### stapling: SSL stapling
 # Arguments:
 #   cert) full path to cert file
@@ -175,14 +185,19 @@ stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
     echo 'resolver_timeout 5s;' >> $file
 }
 
-### ssl_sessions: Setup SSL session resumption
+### static: Setup long EXPIRES header on static assets
 # Arguments:
-#   timeout) how long to keep the session open
-# Return: configure SSL sessions
-ssl_sessions() { local timeout="${1:-5m}" file=/etc/nginx/conf.d/sessions.conf
-    echo '# Session resumption (caching)' > $file
-    echo 'ssl_session_cache shared:SSL:50m;' >> $file
-    echo "ssl_session_timeout $timeout;" >> $file
+#   timeout) how long to keep the cached files
+# Return: configured static asset caching
+static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
+    sed -i '/^    location ~\* \\\./,/^ *$/d' $file
+    sed -i '/^    # proxy/i\
+    location ~* \.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
+        expires 30d;\
+        # Optional: Do not log access to assets\
+        access_log off;\
+    }\
+                ' $file
 }
 
 ### timezone: Set the timezone for the container
@@ -266,6 +281,8 @@ Options (fields in '[]' are optional, '<>' are required):
                 possible arg: [location] (defaults to '/')
                 [location] is the URI in nginx (IE: /wiki)
                 [;IP] addresses that don't have to authenticate
+    -e \"\"       Configure EXPIRES header on static assets
+                possible arg: \"[timeout]\" - timeout for cached files
     -g \"\"       Generate a selfsigned SSL cert
                 possible args: \"[domain][;country][;state][;locality][;org]\"
                     domain - FQDN for server
@@ -305,11 +322,12 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:g:pPHin:r:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        e) static $OPTARG ;;
         p) pfs ;;
         P) prod ;;
         H) hsts ;;
@@ -331,6 +349,7 @@ shift $(( OPTIND - 1 ))
 [[ "${BASIC:-""}" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $BASIC)
 [[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $GENCERT)
+[[ "${EXPIRES:-""}" ]] && ssl_sessions $EXPIRES
 [[ "${PFS:-""}" ]] && pfs
 [[ "${PROD:-""}" ]] && prod
 [[ "${HSTS:-""}" ]] && hsts
