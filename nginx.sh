@@ -56,8 +56,8 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 #   org) company
 # Return: self-signed certs will be generated
 gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
-            locality=${4:-Sola} org=${5:-None} \
-            dir=/etc/nginx/ssl cert=$dir/cert.pem key=$dir/key.pem
+            locality=${4:-Sola} org=${5:-None} dir=/etc/nginx/ssl
+    local cert=$dir/cert.pem key=$dir/key.pem
     [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
 
