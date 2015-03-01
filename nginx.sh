@@ -192,8 +192,8 @@ stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
 static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
     sed -i '/^    location ~\* \\\./,/^ *$/d' $file
     sed -i '/^    # proxy/i\
-    location ~* \.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
-        expires 30d;\
+    location ~* \\.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
+        expires '"$timeout"';\
         # Optional: Do not log access to assets\
         access_log off;\
     }\
