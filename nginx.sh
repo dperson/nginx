@@ -191,8 +191,8 @@ stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
 # Return: configured static asset caching
 static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
     sed -i '/^    ## Optional: set long EXPIRES/,/^ *$/d' $file
-    sed -i '/^    # proxy/i\
-    ## Optional: set long EXPIRES header on static assets
+    sed -i '/^    #error_page/i\
+    ## Optional: set long EXPIRES header on static assets\
     location ~* \\.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
         expires '"$timeout"';\
         ## Optional: Do not log access to assets\
