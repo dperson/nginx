@@ -190,11 +190,12 @@ stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
 #   timeout) how long to keep the cached files
 # Return: configured static asset caching
 static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
-    sed -i '/^    location ~\* \\\./,/^ *$/d' $file
+    sed -i '/^    ## Optional: set long EXPIRES/,/^ *$/d' $file
     sed -i '/^    # proxy/i\
+    ## Optional: set long EXPIRES header on static assets
     location ~* \\.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
         expires '"$timeout"';\
-        # Optional: Do not log access to assets\
+        ## Optional: Do not log access to assets\
         access_log off;\
     }\
                 ' $file
@@ -234,6 +235,9 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_busy_buffers_size 8k;\
         proxy_cache_valid any 1m;\
         proxy_cache_min_uses 3;\
+\
+        ## Optional: Do not log, get it at the destination\
+        access_log off;\
     }
         }' $file
 }
@@ -265,6 +269,9 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_set_header Upgrade $http_upgrade;\
         proxy_set_header Connection "upgrade";\
         proxy_read_timeout 600s;\
+\
+        ## Optional: Do not log, get it at the destination\
+        access_log off;\
     }
         }' $file
 }
