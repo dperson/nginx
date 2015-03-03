@@ -193,7 +193,7 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
     sed -i '/^    ## Optional: set long EXPIRES/,/^ *$/d' $file
     sed -i '/^    #error_page/i\
     ## Optional: set long EXPIRES header on static assets\
-    location ~* \\.(?:jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
+    location ~* \\.(jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
         expires '"$timeout"';\
         ## Optional: Do not log access to assets\
         access_log off;\
