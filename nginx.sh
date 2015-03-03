@@ -195,6 +195,7 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
     ## Optional: set long EXPIRES header on static assets\
     location ~* \\.(jpg|jpeg|gif|bmp|ico|png|css|js|swf)$ {\
         expires '"$timeout"';\
+        add_header Cache-Control private;\
         ## Optional: Do not log access to assets\
         access_log off;\
     }\
