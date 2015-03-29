@@ -8,7 +8,8 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     echo -n "deb http://nginx.org/packages/mainline/debian/ wheezy nginx" >> \
                 /etc/apt/sources.list && \
     apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends apache2-utils openssl nginx &&\
+    apt-get install -qqy --no-install-recommends apache2-utils openssl nginx \
+                $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
     apt-get clean && \
     sed -i 's/#gzip/gzip/' /etc/nginx/nginx.conf && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
