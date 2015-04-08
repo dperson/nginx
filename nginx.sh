@@ -93,7 +93,7 @@ prod() { local file=/etc/nginx/nginx.conf
     sed -i '/# *server_tokens/s/# *//' $file
     grep -q server_tokens $file || sed -i '/^ *sendfile/ i\
     server_tokens   off;' $file
-    sed -i 's/\(^ *server_tokens \)/\1off;/' $file
+    sed -i 's/\(^ *server_tokens \).*/\1off;/' $file
 }
 
 ### hsts: HTTP Strict Transport Security
