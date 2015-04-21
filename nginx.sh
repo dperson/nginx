@@ -165,7 +165,7 @@ server {\
 # Arguments:
 #   timeout) how long to keep the session open
 # Return: configure SSL sessions
-ssl_sessions() { local timeout="${1:-5m}" file=/etc/nginx/conf.d/sessions.conf
+ssl_sessions() { local timeout="${1:-10m}" file=/etc/nginx/conf.d/sessions.conf
     echo '# Session resumption (caching)' > $file
     echo 'ssl_session_cache shared:SSL:50m;' >> $file
     echo "ssl_session_timeout $timeout;" >> $file
