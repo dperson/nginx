@@ -224,10 +224,19 @@ timezone() { local timezone="${1:-EST5EDT}"
 #   location) URI in web server
 # Return: UWSGI added to the config file
 uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
-    grep -q "location $location {" $file ||
-        sed -i '/location \/ /,/^    }/ { /^    }/a\
+    if grep -q "location $location {" $file; then
+        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
+    location '"$location"' {\
+    }' $file
+    else
+        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
     location '"$location"' {\
+    }
+        }' $file
+    fi
+
+    sed -i '/location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         uwsgi_pass '"$service"';\
         uwsgi_param SCRIPT_NAME '"$location"';\
         include uwsgi_params;\
@@ -241,8 +250,7 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_cache_min_uses 3;\
 \
         ## Optional: Do not log, get it at the destination\
-        access_log off;\
-    }
+        access_log off;
         }' $file
 }
 
@@ -252,10 +260,19 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 #   location) URI in web server
 # Return: proxy added to the config file
 proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
-    grep -q "location $location {" $file ||
-        sed -i '/location \/ /,/^    }/ { /^    }/a\
+    if grep -q "location $location {" $file; then
+        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
+    location '"$location"' {\
+    }' $file
+    else
+        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
     location '"$location"' {\
+    }
+        }' $file
+    fi
+
+    sed -i '/location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         proxy_pass       '"$service"';\
         proxy_set_header Host $host;\
         proxy_set_header X-Real-IP $remote_addr;\
@@ -275,8 +292,7 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_read_timeout 600s;\
 \
         ## Optional: Do not log, get it at the destination\
-        access_log off;\
-    }
+        access_log off;
         }' $file
 }
 
