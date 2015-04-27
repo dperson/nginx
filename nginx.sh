@@ -13,7 +13,7 @@
 #        AUTHOR: David Personette (dperson@gmail.com),
 #  ORGANIZATION:
 #       CREATED: 09/28/2014 12:11
-#      REVISION: 1.0
+#      REVISION: 1.1
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
