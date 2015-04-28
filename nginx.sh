@@ -236,7 +236,7 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         }' $file
     fi
 
-    sed -i '/location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         uwsgi_pass '"$service"';\
         uwsgi_param SCRIPT_NAME '"$location"';\
         include uwsgi_params;\
@@ -251,7 +251,7 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
-        }' $file
+        ' $file
 }
 
 ### proxy: Configure a web proxy
@@ -272,7 +272,7 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         }' $file
     fi
 
-    sed -i '/location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         proxy_pass       '"$service"';\
         proxy_set_header Host $host;\
         proxy_set_header X-Real-IP $remote_addr;\
@@ -293,7 +293,7 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
-        }' $file
+        ' $file
 }
 
 ### usage: Help
