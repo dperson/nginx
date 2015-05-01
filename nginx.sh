@@ -108,6 +108,9 @@ add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
 # This will prevent certain click-jacking attacks, but will prevent
 # other sites from framing your site, so delete or modify as necessary!
 add_header X-Frame-Options SAMEORIGIN;
+# This header enables the Cross-site scripting (XSS) filter in most browsers.
+# This will re-enable it for this website if it was otherwise user disabled.
+add_header X-XSS-Protection "1; mode=block";
 EOF
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
