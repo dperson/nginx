@@ -398,13 +398,13 @@ shift $(( OPTIND - 1 ))
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 
-if ps -ef | egrep -v 'grep|nginx.sh' | grep -q nginx; then
-    echo "Service already running, please restart container to apply changes"
-elif [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
+if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
 elif [[ $# -ge 1 ]]; then
     echo "ERROR: command not found: $1"
     exit 13
+elif ps -ef | egrep -v 'grep|nginx.sh' | grep -q nginx; then
+    echo "Service already running, please restart container to apply changes"
 else
     exec nginx -g "daemon off;"
 fi
