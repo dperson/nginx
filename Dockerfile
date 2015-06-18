@@ -12,6 +12,10 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
                 $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
     apt-get clean && \
     sed -i 's/#gzip/gzip/' /etc/nginx/nginx.conf && \
+    sed -i "/http_x_forwarded_for\"';/s/';/ '/" /etc/nginx/nginx.conf && \
+    sed -i "/http_x_forwarded_for/a \\\
+                      '\$request_time \$upstream_response_time';" \
+                /etc/nginx/nginx.conf && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
