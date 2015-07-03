@@ -352,6 +352,8 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
+cd /tmp
+
 while getopts ":hb:g:e:pPHin:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
