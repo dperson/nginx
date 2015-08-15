@@ -1,4 +1,4 @@
-[![logo](https://raw.githubusercontent.com/docker-library/docs/master/nginx/logo.png)](http://nginx.org)
+[![logo](https://raw.githubusercontent.com/dperson/nginx/master/logo.png)](http://nginx.org)
 
 # nginx
 
