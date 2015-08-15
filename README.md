@@ -101,7 +101,7 @@ ENVIROMENT VARIABLES (only available with `docker run`)
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
- * `TIMEZONE` - As above, set a zoneinfo timezone, IE `EST5EDT`
+ * `TZ` - As above, set a zoneinfo timezone, IE `EST5EDT`
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
 
@@ -171,7 +171,7 @@ OR
 
 OR
 
-    sudo docker run -p 80:80 -p 443:443 -e TIMEZONE=EST5EDT -d dperson/nginx
+    sudo docker run -p 80:80 -p 443:443 -e TZ=EST5EDT -d dperson/nginx
 
 ### Start nginx with a defined hostname (instead of 'localhost'):
 

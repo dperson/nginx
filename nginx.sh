@@ -214,11 +214,15 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
 # Return: the correct zoneinfo file will be symlinked into place
 timezone() { local timezone="${1:-EST5EDT}"
     [[ -e /usr/share/zoneinfo/$timezone ]] || {
-        echo "ERROR: invalid timezone specified" >&2
+        echo "ERROR: invalid timezone specified: $timezone" >&2
         return
     }
 
-    ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
+    if [[ $(cat /etc/timezone) != $timezone ]]; then
+        echo "$timezone" > /etc/timezone
+        ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
+        dpkg-reconfigure -f noninteractive tzdata
+    fi
 }
 
 ### uwsgi: Configure a UWSGI proxy
@@ -392,7 +396,7 @@ shift $(( OPTIND - 1 ))
             $REDIRECT)
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
-[[ "${TIMEZONE:-""}" ]] && timezone $TIMEZONE
+[[ "${TZ:-""}" ]] && timezone $TZ
 [[ "${USWGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
 
