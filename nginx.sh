@@ -399,8 +399,11 @@ shift $(( OPTIND - 1 ))
 [[ "${TZ:-""}" ]] && timezone $TZ
 [[ "${USWGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
+[[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID nginx
+[[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && usermod -g $GROUPID nginx
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
+chown -Rh nginx. /var/cache/nginx  2>&1 | grep -iv 'Read-only' || :
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 
