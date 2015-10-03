@@ -101,9 +101,11 @@ ENVIROMENT VARIABLES (only available with `docker run`)
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
- * `TZ` - As above, set a zoneinfo timezone, IE `EST5EDT`
+ * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
+ * `USERID` - Set the UID for the webserver user
+ * `GROUPID` - Set the GID for the webserver user
 
 ## Examples
 
