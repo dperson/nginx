@@ -104,9 +104,10 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
             file2=/etc/nginx/conf.d/default.conf
     cat > $file << EOF
 # HTTP Strict Transport Security (HSTS)
-add_header Strict-Transport-Security "max-age=15768000; includeSubDomains";
+add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
 # This will prevent certain click-jacking attacks, but will prevent
 # other sites from framing your site, so delete or modify as necessary!
+add_header X-Content-Type-Options nosniff;
 add_header X-Frame-Options SAMEORIGIN;
 # This header enables the Cross-site scripting (XSS) filter in most browsers.
 # This will re-enable it for this website if it was otherwise user disabled.
@@ -162,6 +163,29 @@ server {\
     rewrite ^(.*) '"$destination"'$1 permanent;\
 }
                 ' $file
+}
+
+### robot: set header that works like robots.txt
+# Arguments:
+#   none)
+# Return: configure HSTS
+robot() { local file=/etc/nginx/conf.d/robot.conf
+    cat > $file << EOF
+# X-Robots-Tag
+# Directive     Meaning
+# all           no restrictions for indexing or serving (default)
+# noindex       do not show in search results and do not show a "Cached" link
+# nofollow      do not follow the links on this page
+# none          equivalent to noindex, nofollow
+# noarchive     do not show a "Cached" link in search results
+# nosnippet     do not show a snippet in the search results for this page
+# noodp         do not use metadata from the Open Directory project
+# notranslate   do not offer translation of this page in search results
+# noimageindex  do not index images on this page
+# unavailable_after: [RFC-850 date/time]    do not show in search results after
+#               the specified date/time (RFC 850 format)
+add_header X-Robots-Tag none;
+EOF
 }
 
 ### ssl_sessions: Setup SSL session resumption
@@ -284,6 +308,7 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_set_header Host $host;\
         proxy_set_header X-Real-IP $remote_addr;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
+        proxy_set_header X-Forwarded-Proto $scheme;\
 \
         ## Caching for speed\
         proxy_buffering on;\
@@ -331,6 +356,7 @@ Options (fields in '[]' are optional, '<>' are required):
     -i          Enable SSI (Server Side Includes)
     -n          set server_name <name>[:oldname]
     -q          quick (don't create certs)
+    -R          set header to stop robot indexing
     -r \"<service;location>\" Redirect a hostname to a URL
                 required arg: \"<port>;<hostname>;<https://destination/URI>\"
                 <port> to listen on
@@ -358,7 +384,7 @@ The 'command' (if provided and valid) will be run instead of nginx
 
 cd /tmp
 
-while getopts ":hb:g:e:pPHin:r:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:Rr:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -370,6 +396,7 @@ while getopts ":hb:g:e:pPHin:r:s:S:t:u:w:q" opt; do
         i) ssi ;;
         n) eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         q) quick=1 ;;
+        R) robot ;;
         r) eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
@@ -394,6 +421,7 @@ shift $(( OPTIND - 1 ))
 [[ "${OUICK:-""}" ]] && quick=1
 [[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $REDIRECT)
+[[ "${ROBOT:-""}" ]] && robot
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
 [[ "${TZ:-""}" ]] && timezone $TZ

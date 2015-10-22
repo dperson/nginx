@@ -65,6 +65,7 @@ browser.
         -i          Enable SSI (Server Side Includes)
         -n          set server_name <name>[:oldname]
         -q          quick (don't create certs)
+        -R          set header to stop robot indexing
         -r "<service;location>" Redirect a hostname to a URL
                     required arg: "<port>;<hostname>;<https://destination/URI>"
                     <port> to listen on
@@ -99,6 +100,7 @@ ENVIROMENT VARIABLES (only available with `docker run`)
  * `NAME` - As above, set servername
  * `OUICK` - As above, don't generate SSL cert
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
+ * `ROBOT` - As above, set header to stop robot indexing
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
  * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`
@@ -190,6 +192,14 @@ OR
 OR
 
     sudo docker run -p 80:80 -p 443:443 -e PROD=y -d dperson/nginx
+
+### Start nginx with X-Robots-Tag header (block indexing):
+
+    sudo docker run -p 80:80 -p 443:443 -d dperson/nginx -R
+
+OR
+
+    sudo docker run -p 80:80 -p 443:443 -e ROBOT=y -d dperson/nginx
 
 ### Start nginx with SSI (Server Side Includes) enabled:
 
