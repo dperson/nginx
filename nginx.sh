@@ -75,14 +75,14 @@ pfs() { local dir=/etc/nginx/ssl \
 
     [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
 
-    echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' > $file
-    echo 'ssl_dhparam '"$dir/dh2048.pem"';' >> $file
-    echo '' >> $file
+    echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' >$file
+    echo 'ssl_dhparam '"$dir/dh2048.pem"';' >>$file
+    echo '' >>$file
     grep -rq ssl_prefer_server_ciphers /etc/nginx ||
-        echo 'ssl_prefer_server_ciphers on;' >> $file
+        echo 'ssl_prefer_server_ciphers on;' >>$file
     grep -rq ssl_protocols /etc/nginx ||
-        echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >> $file
-    echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >> $file
+        echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >>$file
+    echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >>$file
 }
 
 ### prod: Production mode
@@ -102,17 +102,17 @@ prod() { local file=/etc/nginx/nginx.conf
 # Return: configure HSTS
 hsts() { local file=/etc/nginx/conf.d/hsts.conf \
             file2=/etc/nginx/conf.d/default.conf
-    cat > $file << EOF
-# HTTP Strict Transport Security (HSTS)
-add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
-# This will prevent certain click-jacking attacks, but will prevent
-# other sites from framing your site, so delete or modify as necessary!
-add_header X-Content-Type-Options nosniff;
-add_header X-Frame-Options SAMEORIGIN;
-# This header enables the Cross-site scripting (XSS) filter in most browsers.
-# This will re-enable it for this website if it was otherwise user disabled.
-add_header X-XSS-Protection "1; mode=block";
-EOF
+    cat >$file <<-EOF
+	# HTTP Strict Transport Security (HSTS)
+	add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
+	# This will prevent certain click-jacking attacks, but will prevent
+	# other sites from framing your site, so delete or modify as necessary!
+	add_header X-Content-Type-Options nosniff;
+	add_header X-Frame-Options SAMEORIGIN;
+	# Header enables the Cross-site scripting (XSS) filter in most browsers.
+	# This will re-enable it for this website if it was user disabled.
+	add_header X-XSS-Protection "1; mode=block";
+	EOF
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
     rewrite ^(.*) https://$host$1 permanent;\
@@ -170,22 +170,22 @@ server {\
 #   none)
 # Return: configure HSTS
 robot() { local file=/etc/nginx/conf.d/robot.conf
-    cat > $file << EOF
-# X-Robots-Tag
-# Directive     Meaning
-# all           no restrictions for indexing or serving (default)
-# noindex       do not show in search results and do not show a "Cached" link
-# nofollow      do not follow the links on this page
-# none          equivalent to noindex, nofollow
-# noarchive     do not show a "Cached" link in search results
-# nosnippet     do not show a snippet in the search results for this page
-# noodp         do not use metadata from the Open Directory project
-# notranslate   do not offer translation of this page in search results
-# noimageindex  do not index images on this page
-# unavailable_after: [RFC-850 date/time]    do not show in search results after
-#               the specified date/time (RFC 850 format)
-add_header X-Robots-Tag none;
-EOF
+    cat >$file <<-EOF
+		# X-Robots-Tag
+		# Directive     Meaning
+		# all           no restrictions for indexing / serving (default)
+		# noindex       don't show in search results or a "Cached" link
+		# nofollow      don't follow the links on this page
+		# none          equivalent to noindex, nofollow
+		# noarchive     don't show a "Cached" link in search results
+		# nosnippet     don't show a snippet in the search results
+		# noodp         don't use Open Directory project metadata
+		# notranslate   don't offer translation of this page
+		# noimageindex  don't index images on this page
+		# unavailable_after: [RFC-850 date/time]    don't show after
+		#               the specified date/time (RFC 850 format)
+		add_header X-Robots-Tag none;
+		EOF
 }
 
 ### ssl_sessions: Setup SSL session resumption
@@ -193,9 +193,9 @@ EOF
 #   timeout) how long to keep the session open
 # Return: configure SSL sessions
 ssl_sessions() { local timeout="${1:-10m}" file=/etc/nginx/conf.d/sessions.conf
-    echo '# Session resumption (caching)' > $file
-    echo 'ssl_session_cache shared:SSL:50m;' >> $file
-    echo "ssl_session_timeout $timeout;" >> $file
+    echo '# Session resumption (caching)' >$file
+    echo 'ssl_session_cache shared:SSL:50m;' >>$file
+    echo "ssl_session_timeout $timeout;" >>$file
 }
 
 ### stapling: SSL stapling
@@ -207,12 +207,12 @@ stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
 
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
-    echo '# OCSP (Online Certificate Status Protocol) SSL stapling' > $file
-    echo 'ssl_stapling on;' >> $file
-    echo 'ssl_stapling_verify on;' >> $file
-    echo "ssl_trusted_certificate $cert;" >> $file
-    echo 'resolver 8.8.4.4 8.8.8.8 valid=300s;' >> $file
-    echo 'resolver_timeout 5s;' >> $file
+    echo '# OCSP (Online Certificate Status Protocol) SSL stapling' >$file
+    echo 'ssl_stapling on;' >>$file
+    echo 'ssl_stapling_verify on;' >>$file
+    echo "ssl_trusted_certificate $cert;" >>$file
+    echo 'resolver 8.8.4.4 8.8.8.8 valid=300s;' >>$file
+    echo 'resolver_timeout 5s;' >>$file
 }
 
 ### static: Setup long EXPIRES header on static assets
@@ -243,7 +243,7 @@ timezone() { local timezone="${1:-EST5EDT}"
     }
 
     if [[ $(cat /etc/timezone) != $timezone ]]; then
-        echo "$timezone" > /etc/timezone
+        echo "$timezone" >/etc/timezone
         ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
         dpkg-reconfigure -f noninteractive tzdata >/dev/null 2>&1
     fi
