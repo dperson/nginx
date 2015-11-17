@@ -155,7 +155,7 @@ redirect() { local port=$1 hostname=$2 destination=$3 \
 \
 \
 server {\
-    listen '"$port"';\
+    listen '"$port$(grep -q 443 <<< $port && echo -n " ssl http2")"';\
     server_name '"$hostname"';\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/cert.pem;\\
