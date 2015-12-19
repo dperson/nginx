@@ -24,8 +24,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
 COPY default.conf /etc/nginx/conf.d/
 COPY nginx.sh /usr/bin/
 
-VOLUME ["/run", "/tmp", "/var/cache", "/var/lib", "/var/log", "/var/tmp", \
-            "/srv/www", "/etc/nginx"]
+VOLUME ["/srv/www", "/etc/nginx"]
 
 EXPOSE 80 443
 
