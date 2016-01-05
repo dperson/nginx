@@ -88,7 +88,7 @@ browser.
 
     The 'command' (if provided and valid) will be run instead of nginx
 
-ENVIROMENT VARIABLES (only available with `docker run`)
+ENVIRONMENT VARIABLES (only available with `docker run`)
 
  * `BASIC` - As above, setup basic auth for URI location, IE `/path`
  * `EXPIRES` - As above, Configure EXPIRES header on static assets
