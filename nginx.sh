@@ -57,7 +57,7 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 # Return: self-signed certs will be generated
 gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
             locality=${4:-Sola} org=${5:-None} dir=/etc/nginx/ssl
-    local cert=$dir/cert.pem key=$dir/key.pem
+    local cert=$dir/fullchain.pem key=$dir/privkey.pem
     [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
 
@@ -105,10 +105,12 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
     cat >$file <<-EOF
 	# HTTP Strict Transport Security (HSTS)
 	add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
+
 	# This will prevent certain click-jacking attacks, but will prevent
 	# other sites from framing your site, so delete or modify as necessary!
 	add_header X-Content-Type-Options nosniff;
 	add_header X-Frame-Options SAMEORIGIN;
+
 	# Header enables the Cross-site scripting (XSS) filter in most browsers.
 	# This will re-enable it for this website if it was user disabled.
 	add_header X-XSS-Protection "1; mode=block";
@@ -161,8 +163,8 @@ server {\
     listen '"$port$(grep -q 443 <<< $port && echo -n " ssl http2")"';\
     server_name '"$hostname"';\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
-    ssl_certificate      /etc/nginx/ssl/cert.pem;\\
-    ssl_certificate_key  /etc/nginx/ssl/key.pem;\\\n ')"'\
+    ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
+    ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\\\n ')"'\
     location ^~ /\.well-known/ {\
         root   /srv/www/.well-known;\
         break;\
@@ -176,7 +178,7 @@ server {\
 # Arguments:
 #   none)
 # Return: configure HSTS
-robot() { local file=/etc/nginx/conf.d/robot.conf
+robot() { local tag=${1:-none} file=/etc/nginx/conf.d/robot.conf
     cat >$file <<-EOF
 		# X-Robots-Tag
 		# Directive     Meaning
@@ -191,7 +193,7 @@ robot() { local file=/etc/nginx/conf.d/robot.conf
 		# noimageindex  don't index images on this page
 		# unavailable_after: [RFC-850 date/time]    don't show after
 		#               the specified date/time (RFC 850 format)
-		add_header X-Robots-Tag none;
+		add_header X-Robots-Tag $tag;
 		EOF
 }
 
@@ -210,7 +212,7 @@ ssl_sessions() { local timeout="${1:-10m}" file=/etc/nginx/conf.d/sessions.conf
 #   cert) full path to cert file
 # Return: configure SSL stapling
 stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
-    local cert=${1:-$dir/ocsp.pem}
+    local cert=${1:-$dir/chain.pem}
 
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
@@ -363,7 +365,19 @@ Options (fields in '[]' are optional, '<>' are required):
     -i          Enable SSI (Server Side Includes)
     -n          set server_name <name>[:oldname]
     -q          quick (don't create certs)
-    -R          set header to stop robot indexing
+    -R \"\"     set header to stop robot indexing
+                possible arg: \"[tag]\"
+                    all           no restrictions (default)
+                    noindex       don't show in search results or "Cached" link
+                    nofollow      don't follow the links on this page
+                    none          equivalent to noindex, nofollow
+                    noarchive     don't show a "Cached" link in search results
+                    nosnippet     don't show a snippet in the search results
+                    noodp         don't use Open Directory project metadata
+                    notranslate   don't offer translation of this page
+                    noimageindex  don't index images on this page
+                    unavailable_after: [RFC-850 date/time]    don't show after
+                                the specified date/time (RFC 850 format)
     -r \"<service;location>\" Redirect a hostname to a URL
                 required arg: \"<port>;<hostname>;<https://destination/URI>\"
                 <port> to listen on
@@ -389,7 +403,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:g:e:pPHin:Rr:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:R:r:s:S:t:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -401,7 +415,7 @@ while getopts ":hb:g:e:pPHin:Rr:s:S:t:u:w:q" opt; do
         i) ssi ;;
         n) eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         q) quick=1 ;;
-        R) robot ;;
+        R) robot "$OPTARG" ;;
         r) eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
@@ -426,7 +440,7 @@ shift $(( OPTIND - 1 ))
 [[ "${OUICK:-""}" ]] && quick=1
 [[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $REDIRECT)
-[[ "${ROBOT:-""}" ]] && robot
+[[ "${ROBOT:-""}" ]] && robot "$ROBOT"
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
 [[ "${TZ:-""}" ]] && timezone $TZ

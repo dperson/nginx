@@ -65,7 +65,19 @@ browser.
         -i          Enable SSI (Server Side Includes)
         -n          set server_name <name>[:oldname]
         -q          quick (don't create certs)
-        -R          set header to stop robot indexing
+        -R ""       set header to stop robot indexing
+                    possible arg: "[tag]"
+                        all           no restrictions (default)
+                        noindex       don't show in search results or "Cached" link
+                        nofollow      don't follow the links on this page
+                        none          equivalent to noindex, nofollow
+                        noarchive     don't show a "Cached" link in search results
+                        nosnippet     don't show a snippet in the search results
+                        noodp         don't use Open Directory project metadata
+                        notranslate   don't offer translation of this page
+                        noimageindex  don't index images on this page
+                        unavailable_after: [RFC-850 date/time]    don't show after
+                                    the specified date/time (RFC 850 format)
         -r "<service;location>" Redirect a hostname to a URL
                     required arg: "<port>;<hostname>;<https://destination/URI>"
                     <port> to listen on
