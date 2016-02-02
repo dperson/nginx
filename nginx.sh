@@ -163,7 +163,6 @@ server {\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/cert.pem;\\
     ssl_certificate_key  /etc/nginx/ssl/key.pem;\\\n ')"'\
-\
     location ^~ /.well-known/ {\
         break;\
     }\
