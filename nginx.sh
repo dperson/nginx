@@ -115,6 +115,9 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
 	EOF
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
+    location ^~ /.well-known/ {\
+        break;\
+    }\
     rewrite ^(.*) https://$host$1 permanent;\
 }
                 }' $file2
