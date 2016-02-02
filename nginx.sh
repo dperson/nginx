@@ -164,6 +164,7 @@ server {\
     ssl_certificate      /etc/nginx/ssl/cert.pem;\\
     ssl_certificate_key  /etc/nginx/ssl/key.pem;\\\n ')"'\
     location ^~ /.well-known/ {\
+        root   /srv/www/.well-known/;\
         break;\
     }\
     rewrite ^(.*) '"$destination"'$1 permanent;\
