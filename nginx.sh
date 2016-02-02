@@ -31,6 +31,7 @@ basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
     location '"$loc"' {\
         autoindex on;\
         root /srv/www'"$loc"';\
+        try_files $uri $uri/ =404;\
     }
         }' $file
 
@@ -92,7 +93,7 @@ pfs() { local dir=/etc/nginx/ssl \
 prod() { local file=/etc/nginx/nginx.conf
     sed -i '/# *server_tokens/s/# *//' $file
     grep -q server_tokens $file || sed -i '/^ *sendfile/ i\
-    server_tokens   off;' $file
+    server_tokens off;' $file
     sed -i 's/\(^ *server_tokens \).*/\1off;/' $file
 }
 
@@ -118,6 +119,8 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
     location ^~ /\.well-known/ {\
+        root /srv/www/.well-known;\
+        try_files $uri $uri/ =404;\
         break;\
     }\
     rewrite ^(.*) https://$host$1 permanent;\
@@ -165,12 +168,9 @@ server {\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
     ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\\\n ')"'\
-    location / {\
-        root   /srv/www;\
-        try_files $uri $uri/ =404;\
-    }\
-\
     location ^~ /\.well-known/ {\
+        root /srv/www/.well-known;\
+        try_files $uri $uri/ =404;\
         break;\
     }\
     rewrite ^(.*) '"$destination"'$1 permanent;\
@@ -195,7 +195,7 @@ robot() { local tag=${1:-none} file=/etc/nginx/conf.d/robot.conf
 		# noodp         don't use Open Directory project metadata
 		# notranslate   don't offer translation of this page
 		# noimageindex  don't index images on this page
-		# unavailable_after: [RFC-850 date/time]    don't show after
+		# unavailable_after: [RFC-850 date/time] don't show after
 		#               the specified date/time (RFC 850 format)
 		add_header X-Robots-Tag $tag;
 		EOF
@@ -380,7 +380,7 @@ Options (fields in '[]' are optional, '<>' are required):
                     noodp         don't use Open Directory project metadata
                     notranslate   don't offer translation of this page
                     noimageindex  don't index images on this page
-                    unavailable_after: [RFC-850 date/time]    don't show after
+                    unavailable_after: [RFC-850 date/time] don't show after
                                 the specified date/time (RFC 850 format)
     -r \"<service;location>\" Redirect a hostname to a URL
                 required arg: \"<port>;<hostname>;<https://destination/URI>\"
@@ -454,7 +454,7 @@ shift $(( OPTIND - 1 ))
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
-chown -Rh nginx. /var/cache/nginx  2>&1 | grep -iv 'Read-only' || :
+chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 

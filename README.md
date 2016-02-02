@@ -76,7 +76,7 @@ browser.
                         noodp         don't use Open Directory project metadata
                         notranslate   don't offer translation of this page
                         noimageindex  don't index images on this page
-                        unavailable_after: [RFC-850 date/time]    don't show after
+                        unavailable_after: [RFC-850 date/time] don't show after
                                     the specified date/time (RFC 850 format)
         -r "<service;location>" Redirect a hostname to a URL
                     required arg: "<port>;<hostname>;<https://destination/URI>"
