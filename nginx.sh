@@ -30,8 +30,6 @@ basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
 \
     location '"$loc"' {\
         autoindex on;\
-        root /srv/www'"$loc"';\
-        try_files $uri $uri/ =404;\
     }
         }' $file
 
@@ -119,8 +117,6 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
     location ^~ /\.well-known/ {\
-        root /srv/www/.well-known;\
-        try_files $uri $uri/ =404;\
         break;\
     }\
     rewrite ^(.*) https://$host$1 permanent;\
@@ -169,8 +165,6 @@ server {\
     ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
     ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\\\n ')"'\
     location ^~ /\.well-known/ {\
-        root /srv/www/.well-known;\
-        try_files $uri $uri/ =404;\
         break;\
     }\
     rewrite ^(.*) '"$destination"'$1 permanent;\
