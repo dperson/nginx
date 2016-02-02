@@ -457,6 +457,12 @@ shift $(( OPTIND - 1 ))
 chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
+[[ ! -e /etc/nginx/ssl/chain.pem && -e /etc/nginx/ssl/ocsp.pem ]] &&
+    sed -i 's/chain\.pem/ocsp.pem/' /etc/nginx/conf.d/stapling.conf
+[[ ! -e /etc/nginx/ssl/fullchain.pem && -e /etc/nginx/ssl/cert.pem ]] &&
+    sed -i 's/fullchain\.pem/cert.pem/' /etc/nginx/conf.d/default.conf
+[[ ! -e /etc/nginx/ssl/privkey.pem  && -e /etc/nginx/ssl/key.pem ]] &&
+    sed -i 's/privkey\.pem/key.pem/' /etc/nginx/conf.d/default.conf
 
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
