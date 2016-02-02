@@ -29,8 +29,8 @@ basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
         sed -i '/location \/ /,/^    }/ { /^    }/a\
 \
     location '"$loc"' {\
-        try_files $uri $uri/ =404;\
         autoindex on;\
+        root /srv/www'"$loc"';\
     }
         }' $file
 
@@ -165,8 +165,12 @@ server {\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
     ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\\\n ')"'\
+    location / {\
+        root   /srv/www;\
+        try_files $uri $uri/ =404;\
+    }\
+\
     location ^~ /\.well-known/ {\
-        root   /srv/www/.well-known;\
         break;\
     }\
     rewrite ^(.*) '"$destination"'$1 permanent;\
