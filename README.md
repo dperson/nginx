@@ -89,6 +89,10 @@ browser.
                     possible arg: "[timeout]" - timeout for session reuse, IE 5m
         -t ""       Configure timezone
                     possible arg: "[timezone]" - zoneinfo timezone for container
+        -U "<username;password>" Configure a HTTP auth user
+                    required arg: "username;password"
+                    <username> is the name the user enters for authorization
+                    <password> is the password the user enters for authorization
         -u "<service;location>" Configure UWSGI proxy and location
                     required arg: "<server:port|unix:///path/to.sock>;</location>"
                     <service> is how to contact UWSGI
@@ -116,6 +120,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
  * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`
+ * `HTTPUSER` - As above, configure HTTP user `username;password`
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
  * `USERID` - Set the UID for the webserver user

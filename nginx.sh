@@ -124,6 +124,16 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
                 }' $file2
 }
 
+### http_user: HTTP auth user
+# Arguments:
+#   user) user name for authentication
+#   pass) password for authentication
+# Return: configure HTTP auth user
+http_user() { local user=$1 pass=$2 file=/etc/nginx/htpasswd
+    [[ -e $file ]] || touch $file
+    htpasswd -b $file "$user" "$pass"
+}
+
 ### name: Set server_name
 # Arguments:
 #   name) new server name
@@ -387,6 +397,10 @@ Options (fields in '[]' are optional, '<>' are required):
                 possible arg: \"[timeout]\" - timeout for session reuse
     -t \"\"       Configure timezone
                 possible arg: \"[timezone]\" - zoneinfo timezone for container
+    -U \"<username;password>\" Configure a HTTP auth user
+                required arg: \"username;password\"
+                <username> is the name the user enters for authorization
+                <password> is the password the user enters for authorization
     -u \"<service;location>\" Configure UWSGI proxy and location
                 required arg: \"<server:port|unix:///path/to.sock>;</location>\"
                 <service> is how to contact UWSGI
@@ -401,7 +415,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:g:e:pPHin:R:r:s:S:t:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -418,6 +432,7 @@ while getopts ":hb:g:e:pPHin:R:r:s:S:t:u:w:q" opt; do
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
+        U) eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
@@ -442,6 +457,8 @@ shift $(( OPTIND - 1 ))
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
 [[ "${TZ:-""}" ]] && timezone $TZ
+[[ "${HTTPUSER:-""}" ]] && eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+            $HTTPUSER)
 [[ "${USWGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
