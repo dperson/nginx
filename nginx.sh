@@ -170,6 +170,7 @@ redirect() { local port=$1 hostname=$2 destination=$3 \
 \
 server {\
     listen '"$port$(grep -q 443 <<< $port && echo -n " ssl http2")"';\
+    root /srv/www;\
     server_name '"$hostname"';\
 '"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
     ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
