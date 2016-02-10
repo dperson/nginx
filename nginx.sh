@@ -161,7 +161,7 @@ ssi() { local file=/etc/nginx/conf.d/default.conf
 #   hostname) where to listen
 #   destination) where to send the request
 # Return: hostname redirect added to config
-redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$2 destination=$3 \
+redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$1 destination=$2 \
             file=/etc/nginx/conf.d/default.conf
     sed -n '/^server {/,/^}/p' $file | grep -q "rewrite.*$destination" ||
         sed -i '/^server {/,/^}/ { /^}/i\
