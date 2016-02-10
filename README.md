@@ -79,8 +79,7 @@ browser.
                         unavailable_after: [RFC-850 date/time] don't show after
                                     the specified date/time (RFC 850 format)
         -r "<service;location>" Redirect a hostname to a URL
-                    required arg: "<port>;<hostname>;<https://destination/URI>"
-                    <port> to listen on
+                    required arg: "<hostname>;<https://destination/URI>"
                     <hostname> to listen for (Fully Qualified Domain Name)
                     <destination> where to send the requests
         -s "<cert>" Configure SSL stapling
@@ -125,6 +124,8 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
+
+**NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
 
 ## Examples
 

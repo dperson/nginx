@@ -158,29 +158,18 @@ ssi() { local file=/etc/nginx/conf.d/default.conf
 
 ### redirect: redirect to another host
 # Arguments:
-#   port) port to listen on
 #   hostname) where to listen
 #   destination) where to send the request
 # Return: hostname redirect added to config
-redirect() { local port=$1 hostname=$2 destination=$3 \
+redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$2 destination=$3 \
             file=/etc/nginx/conf.d/default.conf
-    sed -n '/listen/ {N; s/\n//; p}' $file | grep -q " $port;.* $hostname;" ||
-        sed -i "$(grep -n '^}' $file | cut -d: -f1 | tail -1)"'a\
+    sed -n '/^server {/,/^}/p' $file | grep -q "rewrite.*$destination" ||
+        sed -i '/^server {/,/^}/ { /^}/i\
 \
-\
-server {\
-    listen '"$port$(grep -q 443 <<< $port && echo -n " ssl http2")"';\
-    root /srv/www;\
-    server_name '"$hostname"';\
-'"$(grep -q 443 <<< $port && echo -e '\\\n    ssl on;\\
-    ssl_certificate      /etc/nginx/ssl/fullchain.pem;\\
-    ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\\\n ')"'\
-    location ^~ /\.well-known/ {\
-        break;\
-    }\
-    rewrite ^(.*) '"$destination"'$1 permanent;\
-}
-                ' $file
+    if ($hostname = '"$hostname"') {\
+        rewrite ^(.*) '"$destination"'$1 permanent;\
+    }
+        }' $file
 }
 
 ### robot: set header that works like robots.txt
@@ -388,8 +377,7 @@ Options (fields in '[]' are optional, '<>' are required):
                     unavailable_after: [RFC-850 date/time] don't show after
                                 the specified date/time (RFC 850 format)
     -r \"<service;location>\" Redirect a hostname to a URL
-                required arg: \"<port>;<hostname>;<https://destination/URI>\"
-                <port> to listen on
+                required arg: \"<hostname>;<https://destination/URI>\"
                 <hostname> to listen for (Fully Qualified Domain Name)
                 <destination> where to send the requests
     -s \"<cert>\" Configure SSL stapling
