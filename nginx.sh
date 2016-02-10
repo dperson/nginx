@@ -131,7 +131,7 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
 # Return: configure HTTP auth user
 http_user() { local user=$1 pass=$2 file=/etc/nginx/htpasswd
     [[ -e $file ]] || touch $file
-    htpasswd -b $file "$user" "$pass"
+    htpasswd -b $file "$user" "$pass" >/dev/null
 }
 
 ### name: Set server_name
