@@ -164,13 +164,11 @@ ssi() { local file=/etc/nginx/conf.d/default.conf
 redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$1 destination=$2 \
             file=/etc/nginx/conf.d/default.conf
     sed -n '/^server {/,/^}/p' $file | grep -q "rewrite.*$destination" ||
-        sed -i '/^server {/,/^}/ { /rewrite.*https.*\$host/b end
-            /^}/i\
+        sed -i '/^server {/,/^}/ { /^}/i\
 \
     if ($hostname ~ '"$hostname"') {\
         rewrite ^(.*) '"$destination"'$1 permanent;\
     }
-            : end
             }' $file
 }
 
