@@ -100,6 +100,9 @@ browser.
                     required arg: "http://<server[:port]>;</location>"
                     <service> is how to contact the HTTP service
                     <location> is the URI in nginx (IE: /mediatomb)
+                    possible third arg: "[header value]"
+                    [header value] set "header" to "value" on traffic going
+                                through the proxy
 
     The 'command' (if provided and valid) will be run instead of nginx
 

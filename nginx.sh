@@ -296,8 +296,10 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 # Arguments:
 #   service) where to contact HTTP service
 #   location) URI in web server
+#   header) a HTTP header to add as traffic flows through the web proxy
 # Return: proxy added to the config file
-proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
+proxy() { local service=$1 location=$2 header=${3:-""}
+                file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
         sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
     location '"$location"' {\
@@ -316,7 +318,7 @@ proxy() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         proxy_set_header X-Real-IP $remote_addr;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
         proxy_set_header X-Forwarded-Proto $scheme;\
-\
+'"$([[ $header ]] && echo -e "proxy_set_header $header;\\\n")"'\
         ## Caching for speed\
         proxy_buffering on;\
         proxy_buffers 8 4k;\
@@ -398,6 +400,9 @@ Options (fields in '[]' are optional, '<>' are required):
                 required arg: \"http://<server[:port]>;</location>\"
                 <service> is how to contact the HTTP service
                 <location> is the URI in nginx (IE: /mediatomb)
+                possible third arg: \"[header value]\"
+                [header value] set \"header\" to \"value\" on traffic going
+                            through the proxy
 
 The 'command' (if provided and valid) will be run instead of nginx
 " >&2
