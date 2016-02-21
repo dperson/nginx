@@ -318,7 +318,7 @@ proxy() { local service=$1 location=$2 header=${3:-""}
         proxy_set_header X-Real-IP $remote_addr;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
         proxy_set_header X-Forwarded-Proto $scheme;\
-'"$([[ $header ]] && echo -e "proxy_set_header $header;\\\n")"'\
+'"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
         ## Caching for speed\
         proxy_buffering on;\
         proxy_buffers 8 4k;\
