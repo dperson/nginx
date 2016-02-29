@@ -442,7 +442,7 @@ while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q:C" opt; do
         U) eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        C) set_max_size $OPT_ARG ;;
+        C) set_max_size $OPTARG ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
