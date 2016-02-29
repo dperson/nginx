@@ -422,7 +422,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q:C" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
