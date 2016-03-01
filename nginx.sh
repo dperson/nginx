@@ -337,6 +337,17 @@ proxy() { local service=$1 location=$2 header=${3:-""}
         ' $file
 }
 
+### set_max_body_size: set a max body size for large uploads
+# Arguments:
+#  none)
+# Return: The set body size
+set_max_size() { value=$1 file=/etc/nginx/nginx.conf
+    sed -i "/http {/a \
+	   # Set the client max body size \n\
+	# This can be represented as 10M for 10 MB rather than a byte value \n\
+	client_max_body_size $value;" $file
+}
+
 ### usage: Help
 # Arguments:
 #   none)
@@ -403,13 +414,14 @@ Options (fields in '[]' are optional, '<>' are required):
                 possible third arg: \"[header value]\"
                 [header value] set \"header\" to \"value\" on traffic going
                             through the proxy
+    -C \"<max_size>\" Configure the client_max_body_size
 
 The 'command' (if provided and valid) will be run instead of nginx
 " >&2
     exit $RC
 }
 
-while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:qC:" opt; do
     case "$opt" in
         h) usage ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -429,6 +441,7 @@ while getopts ":hb:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
         U) eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        C) set_max_size "$OPTARG" ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
@@ -457,6 +470,7 @@ shift $(( OPTIND - 1 ))
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
+[[ "${SETMAXSIZE:-""}" ]] && set_max_size "$SETMAXSIZE"
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
 chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :

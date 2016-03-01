@@ -103,7 +103,8 @@ browser.
                     possible third arg: "[header value]"
                     [header value] set "header" to "value" on traffic going
                                 through the proxy
-
+        -C \"<max_size>\" Configure the client_max_body_size
+    
     The 'command' (if provided and valid) will be run instead of nginx
 
 ENVIRONMENT VARIABLES (only available with `docker run`)
@@ -127,6 +128,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
+ * `SETMAXSIZE` - Set the client_max_body_size
 
 **NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
 
