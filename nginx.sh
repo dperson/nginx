@@ -428,13 +428,13 @@ The 'command' (if provided and valid) will be run instead of nginx
 OPTSTRING = ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q"
 
 # Ensuring we always set the buffer disabling prior to the proxy config
-while getopts OPTSTRING opt; do
+while getopts ${OPTSTRING} opt; do
     case "$opt" in
         B) PROXY_REQ_BUFFER=$OPTARG
     esac
 done
 
-while getopts OPTSTRING opt; do
+while getopts ${OPTSTRING} opt; do
     case "$opt" in
         h) usage ;;
         B) ;;
