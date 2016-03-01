@@ -337,6 +337,7 @@ proxy() { local service=$1 location=$2 header=${3:-""}
         proxy_busy_buffers_size 8k;\
         proxy_cache_valid any 1m;\
         proxy_cache_min_uses 3;\
+        proxy_request_buffering ${PROXY_REQ_BUFFER:-on}
 \
         ## Required for websockets\
         proxy_http_version 1.1;\
@@ -422,9 +423,17 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+# Ensuring we always set the buffer disabling prior to the proxy config
+while getopts "B:" opt do
+    case "$opt" in
+        B) PROXY_REQ_BUFFER=$OPTARG
+    esac
+done
+
+while getopts ":hBb:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
+        B) ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         c) client_max_body_size "$OPTARG" ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
