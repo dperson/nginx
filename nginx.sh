@@ -341,12 +341,11 @@ proxy() { local service=$1 location=$2 header=${3:-""}
 # Arguments:
 #  none)
 # Return: The set body size
-set_max_size() { value=${1:none} file=/etc/nginx/conf.d/client_max_body_size.conf
-	cat > $file <<-EOF
-		# Set the client max body size
-		# This can be represented as 10M for 10 MB rather than a byte value
-		client_max_body_size $value;
-		EOF
+set_max_size() { value=$1 file=/etc/nginx/nginx.conf
+    sed -i "/http {/a \
+	# Set the client max body size \
+	# This can be represented as 10M for 10 MB rather than a byte value \
+	client_max_body_size $value;" $file
 }
 
 ### usage: Help
