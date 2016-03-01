@@ -426,7 +426,7 @@ The 'command' (if provided and valid) will be run instead of nginx
 }
 
 # Ensuring we always set the buffer disabling prior to the proxy config
-while getopts "B:" opt do
+while getopts "B:" opt; do
     case "$opt" in
         B) PROXY_REQ_BUFFER=$OPTARG
     esac
