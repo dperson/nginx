@@ -358,6 +358,8 @@ usage() { local RC=${1:-0}
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
+    -B  \"proxy buffer state\" Enables/disables the proxy buffer,
+                so that requests are passed through [on/off] (Default on)
     -b \"[location][;IP]\" Configure basic auth for \"location\"
                 possible arg: [location] (defaults to '/')
                 [location] is the URI in nginx (IE: /wiki)
@@ -430,7 +432,7 @@ while getopts "B:" opt do
     esac
 done
 
-while getopts ":hBb:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         B) ;;
