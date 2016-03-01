@@ -425,7 +425,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-OPTSTRING = ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q"
+OPTSTRING=":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q"
 
 # Ensuring we always set the buffer disabling prior to the proxy config
 while getopts ${OPTSTRING} opt; do
