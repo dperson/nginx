@@ -50,7 +50,7 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 # Arguments:
 #  none)
 # Return: The set body size
-client_max_body_size() { value=$1 file=/etc/nginx/conf.d/body_size.conf
+client_max_body_size() { local value=$1 file=/etc/nginx/conf.d/body_size.conf
     cat >$file <<-EOF
 		# Set the client_max_body_size for large uploads
 		# This can be represented as 10M for 10 MB rather than in bytes
