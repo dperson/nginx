@@ -49,6 +49,7 @@ browser.
         -b "[location]" Configure basic auth for "location"
                     possible arg: [location] (defaults to '/')
                     [location] is the URI in nginx (IE: /wiki)
+        -c "<max_size>" Configure the client_max_body_size for uploads
         -e ""       Configure EXPIRES header on static assets
                     possible arg: "[timeout]" - timeout for cached files
         -g ""       Generate a selfsigned SSL cert
@@ -103,8 +104,7 @@ browser.
                     possible third arg: "[header value]"
                     [header value] set "header" to "value" on traffic going
                                 through the proxy
-        -C \"<max_size>\" Configure the client_max_body_size
-    
+
     The 'command' (if provided and valid) will be run instead of nginx
 
 ENVIRONMENT VARIABLES (only available with `docker run`)
@@ -128,7 +128,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
- * `SETMAXSIZE` - Set the client_max_body_size
+ * `CLIENTMAXBODYSIZE` - Set the max file size for uploads
 
 **NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
 
