@@ -487,7 +487,7 @@ shift $(( OPTIND - 1 ))
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
 [[ "${CLIENTMAXBODYSIZE:-""}" ]] && client_max_body_size "$CLIENTMAXBODYSIZE"
-[[ "${PROXYREQUESTBUFFER:-""}"]] && proxy_request_buffer "$PROXYREQUESTBUFFER"
+[[ "${PROXYREQUESTBUFFER:-""}" ]] && proxy_request_buffer "$PROXYREQUESTBUFFER"
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
 chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :
