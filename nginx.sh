@@ -58,6 +58,18 @@ client_max_body_size() { local value=$1 file=/etc/nginx/conf.d/body_size.conf
 		EOF
 }
 
+### proxy_request_buffering: set a max body size for large uploads
+# Arguments:
+#  none)
+# Return: The set proxy request buffer state
+proxy_request_buffering() { local value=$1 file=/etc/nginx/conf.d/proxy_request_buffering.conf
+    cat >$file <<-EOF
+		# Disabled or enables the proxy_request_buffering, which is usful for large uploads
+		# This can be represented as either on or off
+		proxy_request_buffering $value;
+		EOF
+}
+
 ### gencert: Generate SSL cert
 # Arguments:
 #   domain) FQDN for server
@@ -357,6 +369,8 @@ usage() { local RC=${1:-0}
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
+    -B  \"[on|off]\" Enables/disables the proxy request buffer,
+                so that requests are passed through [on/off] (Default on)
     -b \"[location][;IP]\" Configure basic auth for \"location\"
                 possible arg: [location] (defaults to '/')
                 [location] is the URI in nginx (IE: /wiki)
@@ -422,9 +436,10 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hb:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
+        B) proxy_request_buffering "$OPTARG" ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         c) client_max_body_size "$OPTARG" ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -472,6 +487,7 @@ shift $(( OPTIND - 1 ))
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
 [[ "${CLIENTMAXBODYSIZE:-""}" ]] && client_max_body_size "$CLIENTMAXBODYSIZE"
+[[ "${PROXYREQUESTBUFFER:-""}" ]] && proxy_request_buffering "$PROXYREQUESTBUFFER"
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
 chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :

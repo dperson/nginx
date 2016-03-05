@@ -46,6 +46,9 @@ browser.
     Usage: nginx.sh [-opt] [command]
     Options (fields in '[]' are optional, '<>' are required):
         -h          This help
+        -B  \"[on|off]\" Enables/disables the proxy request buffer,
+                so that requests are passed through [on/off] (Default on)
+
         -b "[location]" Configure basic auth for "location"
                     possible arg: [location] (defaults to '/')
                     [location] is the URI in nginx (IE: /wiki)
@@ -129,6 +132,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
  * `CLIENTMAXBODYSIZE` - Set the max file size for uploads
+ * `PROXYREQUESTBUFFER` - Enables or disabled the proxy request buffer `[on|off]`
 
 **NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
 
