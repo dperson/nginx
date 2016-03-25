@@ -50,7 +50,8 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 # Arguments:
 #  none)
 # Return: The set body size
-client_max_body_size() { local value=$1 file=/etc/nginx/conf.d/body_size.conf
+client_max_body_size() { local value=${1:-100M} \
+                file=/etc/nginx/conf.d/body_size.conf
     cat >$file <<-EOF
 		# Set the client_max_body_size for large uploads
 		# This can be represented as 10M for 10 MB rather than in bytes
@@ -62,10 +63,12 @@ client_max_body_size() { local value=$1 file=/etc/nginx/conf.d/body_size.conf
 # Arguments:
 #  none)
 # Return: The set proxy request buffer state
-proxy_request_buffering() { local value=$1 file=/etc/nginx/conf.d/proxy_request_buffering.conf
+proxy_request_buffering() { local value=$1 \
+                file=/etc/nginx/conf.d/proxy_request_buffering.conf
     cat >$file <<-EOF
-		# Disabled or enables the proxy_request_buffering, which is usful for large uploads
-		# This can be represented as either on or off
+		# Disabled or enables the proxy_request_buffering, which is
+		# useful for large uploads. This can be represented as either
+		# on or off
 		proxy_request_buffering $value;
 		EOF
 }
