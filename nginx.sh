@@ -341,10 +341,11 @@ proxy() { local service=$1 location=$2 header=${3:-""}
 
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         proxy_pass       '"$service"';\
-        proxy_set_header Host $http_host;\
-        proxy_set_header X-Real-IP $remote_addr;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
-        proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;\
+        proxy_set_header X-Forwarded-Host $host;\
+        proxy_set_header X-Forwarded-Proto $scheme;\
+        proxy_set_header X-Forwarded-Server $host;\
+        proxy_set_header X-Real-IP $remote_addr;\
 '"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
         ## Caching for speed\
         proxy_buffering on;\
