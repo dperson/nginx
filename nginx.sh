@@ -116,10 +116,10 @@ pfs() { local dir=/etc/nginx/ssl \
 #   none)
 # Return: Turn off server tokens
 prod() { local file=/etc/nginx/nginx.conf
-    sed -i '/# *server_tokens/s/# *//' $file
+    sed -i '/# *server_tokens/s|# *||' $file
     grep -q server_tokens $file || sed -i '/^ *sendfile/ i\
     server_tokens off;' $file
-    sed -i 's/\(^ *server_tokens \).*/\1off;/' $file
+    sed -i 's|\(^ *server_tokens \).*|\1off;|' $file
 }
 
 ### hsts: HTTP Strict Transport Security
@@ -168,7 +168,7 @@ http_user() { local user=$1 pass=$2 file=/etc/nginx/htpasswd
 # Return: configure server_name
 name() { local name=$1 oldname=${2:-localhost} \
             file=/etc/nginx/conf.d/default.conf
-    sed -i 's/\(^ *server_name\) '"$oldname"';/\1 '"$name"';/' $file
+    sed -i 's|\(^ *server_name\) '"$oldname"';|\1 '"$name"';|' $file
 }
 
 ### ssi: Server Side Includes
@@ -498,11 +498,11 @@ chown -Rh nginx. /var/cache/nginx 2>&1 | grep -iv 'Read-only' || :
 [[ -d /etc/nginx/ssl || ${quick:-""} ]] || gencert
 [[ -e /etc/nginx/conf.d/sessions.conf ]] || ssl_sessions
 [[ ! -e /etc/nginx/ssl/chain.pem && -e /etc/nginx/ssl/ocsp.pem ]] &&
-    sed -i 's/chain\.pem/ocsp.pem/' /etc/nginx/conf.d/stapling.conf
+    sed -i 's|chain\.pem|ocsp.pem|' /etc/nginx/conf.d/stapling.conf
 [[ ! -e /etc/nginx/ssl/fullchain.pem && -e /etc/nginx/ssl/cert.pem ]] &&
-    sed -i 's/fullchain\.pem/cert.pem/' /etc/nginx/conf.d/default.conf
+    sed -i 's|fullchain\.pem|cert.pem|' /etc/nginx/conf.d/default.conf
 [[ ! -e /etc/nginx/ssl/privkey.pem  && -e /etc/nginx/ssl/key.pem ]] &&
-    sed -i 's/privkey\.pem/key.pem/' /etc/nginx/conf.d/default.conf
+    sed -i 's|privkey\.pem|key.pem|' /etc/nginx/conf.d/default.conf
 
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
