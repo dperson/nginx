@@ -341,6 +341,7 @@ proxy() { local service=$1 location=$2 header=${3:-""}
 
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         proxy_pass       '"$service"';\
+        proxy_set_header Host $host;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
         proxy_set_header X-Forwarded-Host $host;\
         proxy_set_header X-Forwarded-Proto $scheme;\
@@ -348,11 +349,11 @@ proxy() { local service=$1 location=$2 header=${3:-""}
         proxy_set_header X-Real-IP $remote_addr;\
 '"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
         ## Caching for speed\
-        proxy_buffering on;\
-        proxy_buffers 8 4k;\
-        proxy_busy_buffers_size 8k;\
-        proxy_cache_valid any 1m;\
-        proxy_cache_min_uses 3;\
+        #proxy_buffering on;\
+        #proxy_buffers 8 4k;\
+        #proxy_busy_buffers_size 8k;\
+        #proxy_cache_valid any 1m;\
+        #proxy_cache_min_uses 3;\
 \
         ## Required for websockets\
         proxy_http_version 1.1;\
