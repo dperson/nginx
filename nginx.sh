@@ -348,12 +348,6 @@ proxy() { local service=$1 location=$2 header=${3:-""}
         proxy_set_header X-Forwarded-Server $host;\
         proxy_set_header X-Real-IP $remote_addr;\
 '"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
-        ## Caching for speed\
-        #proxy_buffering on;\
-        #proxy_buffers 8 4k;\
-        #proxy_busy_buffers_size 8k;\
-        #proxy_cache_valid any 1m;\
-        #proxy_cache_min_uses 3;\
 \
         ## Required for websockets\
         proxy_http_version 1.1;\
