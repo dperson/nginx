@@ -289,10 +289,12 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         include            fastcgi_params;\
         fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
         fastcgi_param      PATH_INFO $fastcgi_path_info;\
-        fastcgi_param      HTTPS on;\
         fastcgi_param      modHeadersAvailable true;\
         fastcgi_pass       '"$server"';\
         fastcgi_intercept_errors on;\
+\
+        try_files $uri $uri/ index.php;\
+        index index.php;\
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
@@ -336,16 +338,9 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         uwsgi_pass '"$service"';\
-        uwsgi_param SCRIPT_NAME '"$location"';\
         include uwsgi_params;\
+        uwsgi_param SCRIPT_NAME '"$location"';\
         uwsgi_modifier1 30;\
-\
-        ## Caching for speed\
-        proxy_buffering on;\
-        proxy_buffers 8 4k;\
-        proxy_busy_buffers_size 8k;\
-        proxy_cache_valid any 1m;\
-        proxy_cache_min_uses 3;\
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
