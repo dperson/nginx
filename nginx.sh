@@ -293,7 +293,6 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         fastcgi_pass       '"$server"';\
         fastcgi_intercept_errors on;\
 \
-        try_files $uri $uri/ index.php;\
         index index.php;\
 \
         ## Optional: Do not log, get it at the destination\
