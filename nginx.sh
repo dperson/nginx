@@ -266,6 +266,40 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
                 ' $file
 }
 
+### fastcgi: Configure a fastcgi proxy
+# Arguments:
+#   server) hostname or IP to connect to
+#   location) URI in web server
+#   header) a HTTP header to add as traffic flows through the proxy
+# Return: proxy added to the config file
+fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
+    if grep -q "location $location {" $file; then
+        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
+    location '"$location"' {\
+    }' $file
+    else
+        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
+\
+    location '"$location"' {\
+    }
+        }' $file
+    fi
+
+    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;\
+        include            fastcgi_params;\
+        fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
+        fastcgi_param      PATH_INFO $fastcgi_path_info;\
+        fastcgi_param      HTTPS on;\
+        fastcgi_param      modHeadersAvailable true;\
+        fastcgi_pass       '"$service"';\
+        fastcgi_intercept_errors on;\
+\
+        ## Optional: Do not log, get it at the destination\
+        access_log off;
+        ' $file
+}
+
 ### timezone: Set the timezone for the container
 # Arguments:
 #   timezone) for example EST5EDT
@@ -375,6 +409,10 @@ Options (fields in '[]' are optional, '<>' are required):
     -c \"<max_size>\" Configure the client_max_body_size for uploads
     -e \"\"       Configure EXPIRES header on static assets
                 possible arg: \"[timeout]\" - timeout for cached files
+    -f \"<server;location>\" Configure fastcgi proxy and location
+                required arg: \"<server[:port]>;</location>\"
+                <server> is hostname or IP to connect to
+                <location> is the URI in nginx (IE: /mediatomb)
     -g \"\"       Generate a selfsigned SSL cert
                 possible args: \"[domain][;country][;state][;locality][;org]\"
                     domain - FQDN for server
@@ -433,7 +471,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hB:b:c:g:e:f:pPHin:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         B) proxy_request_buffering "$OPTARG" ;;
@@ -441,6 +479,7 @@ while getopts ":hB:b:c:g:e:pPHin:R:r:s:S:t:U:u:w:q" opt; do
         c) client_max_body_size "$OPTARG" ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         e) static $OPTARG ;;
+        f) eval fastcgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         p) pfs ;;
         P) prod ;;
         H) hsts ;;
@@ -465,6 +504,8 @@ shift $(( OPTIND - 1 ))
 [[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $GENCERT)
 [[ "${EXPIRES:-""}" ]] && ssl_sessions $EXPIRES
+[[ "${FASTCGI:-""}" ]] && eval fastcgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+            $FASTCGI)
 [[ "${PFS:-""}" ]] && pfs
 [[ "${PROD:-""}" ]] && prod
 [[ "${HSTS:-""}" ]] && hsts

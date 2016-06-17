@@ -54,6 +54,10 @@ browser.
         -c "<max_size>" Configure the client_max_body_size for uploads
         -e ""       Configure EXPIRES header on static assets
                     possible arg: "[timeout]" - timeout for cached files
+        -f "<server;location>" Configure fastcgi proxy and location
+                    required arg: "<server[:port]>;</location>"
+                    <server> is hostname or IP to connect to
+                    <location> is the URI in nginx (IE: /mediatomb)
         -g ""       Generate a selfsigned SSL cert
                     possible args: "[domain][;country][;state][;locality][;org]"
                         domain - FQDN for server
@@ -112,7 +116,8 @@ browser.
 ENVIRONMENT VARIABLES (only available with `docker run`)
 
  * `BASIC` - As above, setup basic auth for URI location, IE `/path`
- * `EXPIRES` - As above, Configure EXPIRES header on static assets
+ * `EXPIRES` - As above, configure EXPIRES header on static assets
+ * `FASTCGI` - As above, configure a fastcgi proxy
  * `GENCERT` - As above, make selfsigned SSL cert
  * `PFS` - As above, configure Perfect Forward Secracy
  * `PROD` - As above, production server flags
