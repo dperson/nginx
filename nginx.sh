@@ -270,7 +270,6 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
 # Arguments:
 #   server) hostname or IP to connect to
 #   location) URI in web server
-#   header) a HTTP header to add as traffic flows through the proxy
 # Return: proxy added to the config file
 fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
@@ -292,7 +291,7 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         fastcgi_param      PATH_INFO $fastcgi_path_info;\
         fastcgi_param      HTTPS on;\
         fastcgi_param      modHeadersAvailable true;\
-        fastcgi_pass       '"$service"';\
+        fastcgi_pass       '"$server"';\
         fastcgi_intercept_errors on;\
 \
         ## Optional: Do not log, get it at the destination\
