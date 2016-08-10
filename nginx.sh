@@ -131,6 +131,7 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
     cat >$file <<-EOF
 	# HTTP Strict Transport Security (HSTS)
 	add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
+	add_header Front-End-Https on;
 
 	# This will prevent certain click-jacking attacks, but will prevent
 	# other sites from framing your site, so delete or modify as necessary!
