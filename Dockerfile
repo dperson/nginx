@@ -3,6 +3,8 @@ MAINTAINER David Personette <dperson@gmail.com>
 
 # Install nginx
 RUN export DEBIAN_FRONTEND='noninteractive' && \
+    apt-get update -qq && \
+    apt-get install -qqy --no-install-recommends gnupg2 && \
     apt-key adv --keyserver pgp.mit.edu --recv-keys \
                 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 && \
     /bin/echo -n "deb http://nginx.org/packages/mainline/debian/ jessie nginx" \
