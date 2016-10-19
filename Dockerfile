@@ -5,6 +5,7 @@ MAINTAINER David Personette <dperson@gmail.com>
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update -qq && \
     apt-get install -qqy --no-install-recommends apache2-utils gnupg1 openssl \
+                psutils \
                 $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
     sed -i 's/stretch/jessie/g' /etc/apt/sources.list && \
     apt-key adv --keyserver pgp.mit.edu --recv-keys \
