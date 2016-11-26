@@ -69,6 +69,9 @@ browser.
                     NOTE: DH keygen is slow
         -P          Configure Production mode (no server tokens)
         -H          Configure HSTS (HTTPS Strict Transport Security)
+        -I "<file>" Include a configuration file
+                    required arg: "<file>"
+                    <file> to be included
         -i          Enable SSI (Server Side Includes)
         -n          set server_name <name>[:oldname]
         -q          quick (don't create certs)
@@ -122,6 +125,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `PFS` - As above, configure Perfect Forward Secracy
  * `PROD` - As above, production server flags
  * `HSTS` - As above, HTTPS Strict Transport Security
+ * `INCLUDE` - As above, file to be included in configuration
  * `SSI` - As above, setup basic auth for URI location, IE `/path`
  * `NAME` - As above, set servername
  * `OUICK` - As above, don't generate SSL cert

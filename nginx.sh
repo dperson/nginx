@@ -136,7 +136,9 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
 	# This will prevent certain click-jacking attacks, but will prevent
 	# other sites from framing your site, so delete or modify as necessary!
 	add_header X-Content-Type-Options nosniff;
+	add_header X-Download-Options noopen;
 	add_header X-Frame-Options SAMEORIGIN;
+	add_header X-Permitted-Cross-Domain-Policies none;
 
 	# Header enables the Cross-site scripting (XSS) filter in most browsers.
 	# This will re-enable it for this website if it was user disabled.
@@ -290,18 +292,32 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 \
         location ~ \.*php {\
             fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
+            include            fastcgi_params;\
             fastcgi_index      index.php;\
             fastcgi_intercept_errors on;\
             fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
             fastcgi_param      PATH_INFO $fastcgi_path_info;\
             fastcgi_param      modHeadersAvailable true;\
+            fastcgi_param      front_controller_active true;\
             fastcgi_pass       '"$server"';\
-            include            fastcgi_params;\
 \
             ## Optional: Do not log, get it at the destination\
             access_log off;\
         }
         ' $file
+}
+
+### include: incude a configuration file
+# Arguments:
+#   file) to be included
+# Return: file included in the config file
+include() { local conf=$1 file=/etc/nginx/conf.d/default.conf
+    grep -q "^[^#]*include $conf\$" $file ||
+        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
+\
+    include '"$conf"'\
+
+            }' $file
 }
 
 ### timezone: Set the timezone for the container
@@ -424,6 +440,9 @@ Options (fields in '[]' are optional, '<>' are required):
                 NOTE: DH keygen is slow
     -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
+    -I \"<file>\" Include a configuration file
+                required arg: \"<file>\"
+                <file> to be included
     -i          Enable SSI (Server Side Includes)
     -n          set server_name <name>[:oldname]
     -q          quick (don't create certs)
@@ -471,7 +490,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hB:b:c:g:e:f:pPHin:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hB:b:c:g:e:f:pPHI:in:R:r:s:S:t:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         B) proxy_request_buffering "$OPTARG" ;;
@@ -483,6 +502,7 @@ while getopts ":hB:b:c:g:e:f:pPHin:R:r:s:S:t:U:u:w:q" opt; do
         p) pfs ;;
         P) prod ;;
         H) hsts ;;
+        I) include "$OPTARG" ;;
         i) ssi ;;
         n) eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         q) quick=1 ;;
@@ -509,6 +529,7 @@ shift $(( OPTIND - 1 ))
 [[ "${PFS:-""}" ]] && pfs
 [[ "${PROD:-""}" ]] && prod
 [[ "${HSTS:-""}" ]] && hsts
+[[ "${INCLUDE:-""}" ]] && include "$INCLUDE"
 [[ "${SSI:-""}" ]] && ssi
 [[ "${NAME:-""}" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $NAME)
 [[ "${OUICK:-""}" ]] && quick=1
