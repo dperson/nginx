@@ -312,10 +312,10 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 #   file) to be included
 # Return: file included in the config file
 include() { local conf=$1 file=/etc/nginx/conf.d/default.conf
-    grep -q "^[^#]*include $conf\$" $file ||
+    grep -q "^[^#]*include $conf;\$" $file ||
         sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
-    include '"$conf"'\
+    include '"$conf"';\
 
             }' $file
 }
