@@ -288,13 +288,12 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         fastcgi_split_path_info ^(.+\.php)(/.+)$;\
         include            fastcgi_params;\
+        fastcgi_index      index.php;\
         fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
         fastcgi_param      PATH_INFO $fastcgi_path_info;\
         fastcgi_param      modHeadersAvailable true;\
         fastcgi_pass       '"$server"';\
         fastcgi_intercept_errors on;\
-\
-        index index.php;\
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
