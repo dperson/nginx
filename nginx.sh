@@ -273,19 +273,19 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
 #   location) URI in web server
 # Return: proxy added to the config file
 fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
-    if grep -q "location $location {" $file; then
-        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
-    location '"$location"' {\
+    if grep -q "location $location.*php.* /{" $file; then
+        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"'.*php.* {/,/^    }/c\
+    location '"$location"'.*php.* {\
     }' $file
     else
         sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
-    location '"$location"' {\
+    location '"$location"'.*php.* {\
     }
         }' $file
     fi
 
-    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"'.*php.* {/a\
         fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
         fastcgi_index      index.php;\
         fastcgi_intercept_errors on;\
