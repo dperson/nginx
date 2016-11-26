@@ -273,30 +273,34 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
 #   location) URI in web server
 # Return: proxy added to the config file
 fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
-    if grep -q "location ~ $location.*php {" $file; then
-        sed -i '/^[^#]*location ~ '"$(sed 's|/|\\/|g'<<<$location)"'.*php {/,/^    }/c\
-    location ~ '"$location"'.*php {\
+    if grep -q "location $location {" $file; then
+        sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
+    location '"$location"' {\
     }' $file
     else
         sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
-    location ~ '"$location"'.*php {\
+    location '"$location"' {\
     }
         }' $file
     fi
 
-    sed -i '/^[^#]*location ~ '"$(sed 's|/|\\/|g' <<< $location)"'.*php {/a\
-        fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
-        fastcgi_index      index.php;\
-        fastcgi_intercept_errors on;\
-        fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
-        fastcgi_param      PATH_INFO $fastcgi_path_info;\
-        fastcgi_param      modHeadersAvailable true;\
-        fastcgi_pass       '"$server"';\
-        include            fastcgi_params;\
+    sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+        location ~ \.*php {\
+            fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
+            fastcgi_index      index.php;\
+            fastcgi_intercept_errors on;\
+            fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
+            fastcgi_param      PATH_INFO $fastcgi_path_info;\
+            fastcgi_param      modHeadersAvailable true;\
+            fastcgi_pass       '"$server"';\
+            include            fastcgi_params;\
 \
-        ## Optional: Do not log, get it at the destination\
-        access_log off;
+            ## Optional: Do not log, get it at the destination\
+            access_log off;\
+        }\
+\
+        index              index.php;
         ' $file
 }
 
