@@ -289,7 +289,7 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
         fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
         fastcgi_index      index.php;\
         fastcgi_intercept_errors on;\
-        fastcgi_param      SCRIPT_FILENAME $fastcgi_script_name;\
+        fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
         fastcgi_param      PATH_INFO $fastcgi_path_info;\
         fastcgi_param      modHeadersAvailable true;\
         fastcgi_pass       '"$server"';\
