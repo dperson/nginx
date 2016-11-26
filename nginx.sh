@@ -286,6 +286,8 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
     fi
 
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
+        index              index.php;\
+\
         location ~ \.*php {\
             fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
             fastcgi_index      index.php;\
@@ -298,9 +300,7 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 \
             ## Optional: Do not log, get it at the destination\
             access_log off;\
-        }\
-\
-        index              index.php;
+        }
         ' $file
 }
 
