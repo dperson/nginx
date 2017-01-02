@@ -98,6 +98,12 @@ browser.
                     possible arg: "[timeout]" - timeout for session reuse, IE 5m
         -t ""       Configure timezone
                     possible arg: "[timezone]" - zoneinfo timezone for container
+        -T "<server;dest>[;protocol]" Configure a stream proxy
+                    required arg: "<[IP:]port>;<dest>"
+                    <server> what (optional) IP and (required) port to listen on
+                    <dest> where to send the requests to <name_or_IP>:<port>
+                    possible third arg: "[protocol]"
+                    [protocol] if not TCP, specify here (IE "udp")
         -U "<username;password>" Configure a HTTP auth user
                     required arg: "username;password"
                     <username> is the name the user enters for authorization
@@ -131,6 +137,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `OUICK` - As above, don't generate SSL cert
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
  * `ROBOT` - As above, set header to stop robot indexing
+ * `STREAM` - As above, configure a stream proxy
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
  * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`

@@ -118,8 +118,8 @@ pfs() { local dir=/etc/nginx/ssl \
 prod() { local file=/etc/nginx/nginx.conf
     sed -i '/# *server_tokens/s|# *||' $file
     grep -q server_tokens $file || sed -i '/^ *sendfile/ i\
-    server_tokens off;' $file
-    sed -i 's|\(^ *server_tokens \).*|\1off;|' $file
+    server_tokens   off;' $file
+    sed -i 's|\(^ *server_tokens *\).*|\1off;|' $file
 }
 
 ### hsts: HTTP Strict Transport Security
@@ -223,6 +223,25 @@ robot() { local tag=${1:-none} file=/etc/nginx/conf.d/robot.conf
 		#               the specified date/time (RFC 850 format)
 		add_header X-Robots-Tag $tag;
 		EOF
+}
+
+### stream: Configure a stream proxy
+# Arguments:
+#   server) where to listen for connections
+#   dest) where to forward connections
+# Return: stream added to the config file
+stream() { local server=$1 dest=$2 proto=${3:-""} \
+            file=/etc/nginx/conf.d/default.stream
+    if grep -q "server { listen $server${proto:+ $proto};" $file; then
+        sed -i '/^[^#]*server { listen '"$server${proto:+ $proto}"';/,/^}/d' \
+                    $file
+    fi
+    echo -e "server { listen $server${proto:+ $proto};\n}" >>$file
+
+    sed -i '/^[^#]*server { listen '"$server${proto:+ $proto}"';/a\
+    proxy_connect_timeout 1s;\
+    proxy_timeout 3s;\
+    proxy_pass '"$dest"';' $file
 }
 
 ### ssl_sessions: Setup SSL session resumption
@@ -469,6 +488,12 @@ Options (fields in '[]' are optional, '<>' are required):
                 possible arg: \"[timeout]\" - timeout for session reuse
     -t \"\"       Configure timezone
                 possible arg: \"[timezone]\" - zoneinfo timezone for container
+    -T \"<server;dest>[;protocol]\" Configure a stream proxy
+                required arg: \"<[IP:]port>;<dest>\"
+                <server> what (optional) IP and (required) port to listen on
+                <dest> where to send the requests to <name_or_IP>:<port>
+                possible third arg: \"[protocol]\"
+                [protocol] if not TCP, specify here (IE \"udp\")
     -U \"<username;password>\" Configure a HTTP auth user
                 required arg: \"username;password\"
                 <username> is the name the user enters for authorization
@@ -490,7 +515,7 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hB:b:c:g:e:f:pPHI:in:R:r:s:S:t:U:u:w:q" opt; do
+while getopts ":hB:b:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         B) proxy_request_buffering "$OPTARG" ;;
@@ -511,6 +536,7 @@ while getopts ":hB:b:c:g:e:f:pPHI:in:R:r:s:S:t:U:u:w:q" opt; do
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
+        T) eval stream $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         U) eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
@@ -531,6 +557,7 @@ shift $(( OPTIND - 1 ))
 [[ "${HSTS:-""}" ]] && hsts
 [[ "${INCLUDE:-""}" ]] && include "$INCLUDE"
 [[ "${SSI:-""}" ]] && ssi
+[[ "${STREAM:-""}" ]] && eval stream $(sed 's/^\|$/"/g; s/;/" "/g' <<< $STREAM)
 [[ "${NAME:-""}" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $NAME)
 [[ "${OUICK:-""}" ]] && quick=1
 [[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
