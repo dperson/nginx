@@ -21,6 +21,8 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
                 /etc/nginx/nginx.conf && \
     echo "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
                 /etc/nginx/nginx.conf && \
+    [ -d /srv/www ] || mkdir -p /srv/www && \
+    mv /usr/share/nginx/html/index.html /srv/www/ && \
     apt-get purge -qqy gnupg1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
