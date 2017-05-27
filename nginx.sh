@@ -95,20 +95,32 @@ gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
 # Arguments:
 #   none)
 # Return: setup PFS config
-pfs() { local dir=/etc/nginx/ssl \
+pfs() { local dir=/etc/nginx/ssl cert=$dir/ffdhe4096.pem \
             file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
     [[ -d $dir ]] || mkdir -p $dir
 
-    [[ -e $dir/dh2048.pem ]] || openssl dhparam -out $dir/dh2048.pem 2048
-
-    echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' >$file
-    echo 'ssl_dhparam '"$dir/dh2048.pem"';' >>$file
+    [[ -e $cert ]] ||
+        echo '-----BEGIN DH PARAMETERS-----
+MIICCAKCAgEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3
+7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32
+nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZp4e
+8W5vUsMWTfT7eTDp5OWIV7asfV9C1p9tGHdjzx1VA0AEh/VbpX4xzHpxNciG77Qx
+iu1qHgEtnmgyqQdgCpGBMMRtx3j5ca0AOAkpmaMzy4t6Gh25PXFAADwqTs6p+Y0K
+zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eZV9q//////////8CAQI=
+-----END DH PARAMETERS-----' >$cert
+    echo 'ssl_dhparam '"$cert"';' >>$file
     echo '' >>$file
-    echo "ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';" >>$file
+
+    echo "ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!DSS:!aNULL:!eNULL:!EXPORT:!RC4:!DES:!3DES:!SSLv2:!MD5:!PSK';" >>$file
     grep -rq ssl_prefer_server_ciphers /etc/nginx ||
         echo 'ssl_prefer_server_ciphers on;' >>$file
     grep -rq ssl_protocols /etc/nginx ||
-        echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >>$file
+        echo "ssl_protocols TLSv1.2;" >>$file
 }
 
 ### prod: Production mode
@@ -457,7 +469,6 @@ Options (fields in '[]' are optional, '<>' are required):
                     locality - city
                     org - company
     -p \"\"       Configure PFS (Perfect Forward Secrecy)
-                NOTE: DH keygen is slow
     -P          Configure Production mode (no server tokens)
     -H          Configure HSTS (HTTP Strict Transport Security)
     -I \"<file>\" Include a configuration file
