@@ -51,6 +51,7 @@ browser.
         -b "[location]" Configure basic auth for "location"
                     possible arg: [location] (defaults to '/')
                     [location] is the URI in nginx (IE: /wiki)
+        -C ""       Configure Content Security Policy header
         -c "<max_size>" Configure the client_max_body_size for uploads
         -e ""       Configure EXPIRES header on static assets
                     possible arg: "[timeout]" - timeout for cached files
@@ -65,9 +66,9 @@ browser.
                         state - state of server location
                         locality - city
                         org - company
+        -P          Configure Production mode (no server tokens)
         -p          Configure PFS (Perfect Forward Secrecy)
                     NOTE: DH keygen is slow
-        -P          Configure Production mode (no server tokens)
         -H          Configure HSTS (HTTPS Strict Transport Security)
         -I "<file>" Include a configuration file
                     required arg: "<file>"
@@ -148,6 +149,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
  * `CLIENTMAXBODYSIZE` - Set the max file size for uploads
+ * `CONTENTSECURITY` - Set a CSP (Content Security Policy)
 
 **NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
 

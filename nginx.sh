@@ -59,6 +59,18 @@ client_max_body_size() { local value=${1:-100M} \
 		EOF
 }
 
+### content_security: set a Content Security Policy header
+# Arguments:
+#  policy) optional policy
+# Return: The set body size
+content_security() { local policy="${1:-default-src: https: 'unsafe-inline'}" \
+                file=/etc/nginx/conf.d/content_security.conf
+    cat >$file <<-EOF
+		# Set a Content Security Policy header
+		add_header Content-Security-Policy "$policy";
+		EOF
+}
+
 ### proxy_request_buffering: set a max body size for large uploads
 # Arguments:
 #  none)
@@ -454,6 +466,7 @@ Options (fields in '[]' are optional, '<>' are required):
                 possible arg: [location] (defaults to '/')
                 [location] is the URI in nginx (IE: /wiki)
                 [;IP] addresses that don't have to authenticate
+    -C \"\"       Configure Content Security Policy header
     -c \"<max_size>\" Configure the client_max_body_size for uploads
     -e \"\"       Configure EXPIRES header on static assets
                 possible arg: \"[timeout]\" - timeout for cached files
@@ -468,8 +481,8 @@ Options (fields in '[]' are optional, '<>' are required):
                     state - state of server location
                     locality - city
                     org - company
-    -p \"\"       Configure PFS (Perfect Forward Secrecy)
     -P          Configure Production mode (no server tokens)
+    -p \"\"       Configure PFS (Perfect Forward Secrecy)
     -H          Configure HSTS (HTTP Strict Transport Security)
     -I \"<file>\" Include a configuration file
                 required arg: \"<file>\"
@@ -527,11 +540,12 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hB:b:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
+while getopts ":hB:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
         B) proxy_request_buffering "$OPTARG" ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        C) content_security "$OPTARG" ;;
         c) client_max_body_size "$OPTARG" ;;
         g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         e) static $OPTARG ;;
@@ -585,6 +599,7 @@ shift $(( OPTIND - 1 ))
 [[ "${PROXYBUFFER:-""}" ]] && proxy_request_buffering "$PROXYBUFFER"
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
+[[ "${CONTENTSECURITY:-""}" ]] && content_security "$CONTENTSECURITY"
 [[ "${CLIENTMAXBODYSIZE:-""}" ]] && client_max_body_size "$CLIENTMAXBODYSIZE"
 
 [[ -d /var/cache/nginx/cache ]] || mkdir -p /var/cache/nginx/cache
