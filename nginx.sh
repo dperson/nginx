@@ -95,12 +95,12 @@ gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
 # Arguments:
 #   none)
 # Return: setup PFS config
-pfs() { local dir=/etc/nginx/ssl cert=$dir/ffdhe4096.pem \
-            file=/etc/nginx/conf.d/perfect_forward_secrecy.conf
-    [[ -d $dir ]] || mkdir -p $dir
+pfs() { local dir=/etc/nginx; local cert=$dir/ssl/ffdhe4096.pem \
+            file=$dir/conf.d/perfect_forward_secrecy.conf
+    [[ -d $dir/ssl ]] || mkdir -p $dir/ssl
 
     [[ -e $cert ]] ||
-        echo '-----BEGIN DH PARAMETERS-----
+        echo -n '-----BEGIN DH PARAMETERS-----
 MIICCAKCAgEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
 +8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
 87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
@@ -113,7 +113,7 @@ nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZp4e
 iu1qHgEtnmgyqQdgCpGBMMRtx3j5ca0AOAkpmaMzy4t6Gh25PXFAADwqTs6p+Y0K
 zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eZV9q//////////8CAQI=
 -----END DH PARAMETERS-----' >$cert
-    echo 'ssl_dhparam '"$cert"';' >>$file
+    echo "ssl_dhparam $cert;" >>$file
     echo '' >>$file
 
     echo "ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!DSS:!aNULL:!eNULL:!EXPORT:!RC4:!DES:!3DES:!SSLv2:!MD5:!PSK';" >>$file
