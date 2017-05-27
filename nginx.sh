@@ -104,11 +104,11 @@ pfs() { local dir=/etc/nginx/ssl \
     echo '# Diffie-Hellman parameter for DHE, recommended 2048 bits' >$file
     echo 'ssl_dhparam '"$dir/dh2048.pem"';' >>$file
     echo '' >>$file
+    echo "ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';" >>$file
     grep -rq ssl_prefer_server_ciphers /etc/nginx ||
         echo 'ssl_prefer_server_ciphers on;' >>$file
     grep -rq ssl_protocols /etc/nginx ||
         echo "ssl_protocols TLSv1 TLSv1.1 TLSv1.2;" >>$file
-    echo "ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';" >>$file
 }
 
 ### prod: Production mode
@@ -248,9 +248,10 @@ stream() { local server=$1 dest=$2 proto=${3:-""} \
 # Arguments:
 #   timeout) how long to keep the session open
 # Return: configure SSL sessions
-ssl_sessions() { local timeout="${1:-10m}" file=/etc/nginx/conf.d/sessions.conf
+ssl_sessions() { local timeout="${1:-1d}" file=/etc/nginx/conf.d/sessions.conf
     echo '# Session resumption (caching)' >$file
     echo 'ssl_session_cache shared:SSL:50m;' >>$file
+    echo "ssl_session_tickets off;" >>$file
     echo "ssl_session_timeout $timeout;" >>$file
 }
 
