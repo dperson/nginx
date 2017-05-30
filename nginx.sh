@@ -103,6 +103,14 @@ gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
         -nodes -subj "/C=$country/ST=$state/L=$locality/O=$org/CN=$domain"
 }
 
+### ipv6: disables ipv6
+# Arguments:
+#   none)
+# Return: disables ipv6
+ipv6() { local file=/etc/nginx/conf.d/default.conf
+    sed -i '/::/d' $file
+}
+
 ### pfs: Perfect Forward Secrecy
 # Arguments:
 #   none)
@@ -460,6 +468,7 @@ usage() { local RC=${1:-0}
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
+    -6          Disable IPv6
     -B  \"[on|off]\" Enables/disables the proxy request buffer,
                 so that requests are passed through [on/off] (Default on)
     -b \"[location][;IP]\" Configure basic auth for \"location\"
@@ -540,9 +549,10 @@ The 'command' (if provided and valid) will be run instead of nginx
     exit $RC
 }
 
-while getopts ":hB:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
+while getopts ":h6B:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
     case "$opt" in
         h) usage ;;
+        6) ipv6 ;;
         B) proxy_request_buffering "$OPTARG" ;;
         b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         C) content_security "$OPTARG" ;;
@@ -572,6 +582,7 @@ while getopts ":hB:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
 done
 shift $(( OPTIND - 1 ))
 
+[[ "${IPV6:-""}" ]] && ipv6
 [[ "${BASIC:-""}" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $BASIC)
 [[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $GENCERT)

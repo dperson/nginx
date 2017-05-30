@@ -46,6 +46,7 @@ browser.
     Usage: nginx.sh [-opt] [command]
     Options (fields in '[]' are optional, '<>' are required):
         -h          This help
+        -6          Disable IPv6
         -B  "[on|off]" Enables/disables the proxy request buffer,
                     so that requests are passed through [on/off] (Default on)
         -b "[location]" Configure basic auth for "location"
@@ -125,6 +126,7 @@ browser.
 
 ENVIRONMENT VARIABLES (only available with `docker run`)
 
+ * `IPV6` - As above, disables IPv6 support
  * `BASIC` - As above, setup basic auth for URI location, IE `/path`
  * `EXPIRES` - As above, configure EXPIRES header on static assets
  * `FASTCGI` - As above, configure a fastcgi proxy
