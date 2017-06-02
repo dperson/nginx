@@ -19,7 +19,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
                       '\$request_time \$upstream_response_time';" \
                 /etc/nginx/nginx.conf && \
     echo "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
-                /etc/nginx/nginx.conf && \
+                >>/etc/nginx/nginx.conf && \
     [ -d /srv/www ] || mkdir -p /srv/www && \
     mv /usr/share/nginx/html/index.html /srv/www/ && \
     apt-get purge -qqy gnupg1 && \
