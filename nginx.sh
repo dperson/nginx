@@ -21,6 +21,7 @@ set -o nounset                              # Treat unset variables as an error
 ### basic: Basic Auth
 # Arguments:
 #   location) optional location for basic auth
+#   IP) optionl range(s) to allow without auth
 # Return: configure Basic Auth
 basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
     shift

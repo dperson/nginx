@@ -49,9 +49,10 @@ browser.
         -6          Disable IPv6
         -B  "[on|off]" Enables/disables the proxy request buffer,
                     so that requests are passed through [on/off] (Default on)
-        -b "[location]" Configure basic auth for "location"
+        -b "[location][;IP]" Configure basic auth for "location"
                     possible arg: [location] (defaults to '/')
                     [location] is the URI in nginx (IE: /wiki)
+                    [;IP] addresses that don't have to authenticate
         -C ""       Configure Content Security Policy header
         -c "<max_size>" Configure the client_max_body_size for uploads
         -e ""       Configure EXPIRES header on static assets
