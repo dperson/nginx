@@ -39,7 +39,7 @@ basic() { local loc=${1:-\\/} dav file=/etc/nginx/conf.d/default.conf
     sed -n '/location '"$(sed 's|/|\\/|g' <<< $loc)"' /,/^    }/p' $file |
                 grep -q auth_basic ||
         sed -i '/location '"$(sed 's|/|\\/|g' <<<$loc)"' /,/^    }/ { /^    }/i\
-'"$([[ ${dav:-""} ]] && echo '\' && echo "dav_access $dav;\\"
+'"$([[ ${dav:-""} ]] && echo '\' && echo "        dav_access $dav;\\"
 [[ ${1:-""} ]] && echo '\'; for i; do
     echo -e '        allow '"$i"';\'
 done; [[ ${1:-""} ]] && echo ' ')"'\
