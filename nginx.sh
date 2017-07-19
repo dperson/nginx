@@ -23,8 +23,10 @@ set -o nounset                              # Treat unset variables as an error
 #   location) optional location for basic auth
 #   IP) optionl range(s) to allow without auth
 # Return: configure Basic Auth
-basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
+basic() { local loc=${1:-\\/} dav file=/etc/nginx/conf.d/default.conf
     shift
+    [[ ${1:-""} =~ ^dav ]] && {
+        dav=$(sed 's/^dav#//; s/#/ /g' <<< ${1:-""}); shift; }
 
     grep -q '^[^#]*location '"$loc" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
@@ -37,7 +39,8 @@ basic() { local loc=${1:-\\/} file=/etc/nginx/conf.d/default.conf
     sed -n '/location '"$(sed 's|/|\\/|g' <<< $loc)"' /,/^    }/p' $file |
                 grep -q auth_basic ||
         sed -i '/location '"$(sed 's|/|\\/|g' <<<$loc)"' /,/^    }/ { /^    }/i\
-'"$([[ ${1:-""} ]] && echo '\'; for i; do
+'"$([[ ${dav:-""} ]] && echo '\' && echo "dav_access $dav;\\"
+[[ ${1:-""} ]] && echo '\'; for i; do
     echo -e '        allow '"$i"';\'
 done; [[ ${1:-""} ]] && echo ' ')"'\
         auth_basic           "restricted access";\
