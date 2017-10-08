@@ -277,8 +277,8 @@ stream() { local server=$1 dest=$2 proto=${3:-""} \
     echo -e "server { listen $server${proto:+ $proto};\n}" >>$file
 
     sed -i '/^[^#]*server { listen '"$server${proto:+ $proto}"';/a\
-    proxy_connect_timeout 1s;\
-    proxy_timeout 3s;\
+    proxy_connect_timeout 10s;\
+    proxy_timeout 1800s;\
     proxy_pass '"$dest"';' $file
 }
 
