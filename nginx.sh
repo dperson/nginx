@@ -543,7 +543,7 @@ Options (fields in '[]' are optional, '<>' are required):
                 <service> is how to contact UWSGI
                 <location> is the URI in nginx (IE: /wiki)
     -w \"<service;location>\" Configure web proxy and location
-                required arg: \"http://<server[:port]>;</location>\"
+                required arg: \"http://<server[:port]>/;/<location>/\"
                 <service> is how to contact the HTTP service
                 <location> is the URI in nginx (IE: /mediatomb)
                 possible third arg: \"[header value]\"

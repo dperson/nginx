@@ -116,7 +116,7 @@ browser.
                     <service> is how to contact UWSGI
                     <location> is the URI in nginx (IE: /wiki)
         -w "<service;location>" Configure web proxy and location
-                    required arg: "http://<server[:port]>;</location>"
+                    required arg: "http://<server[:port]>/;/<location>/"
                     <service> is how to contact the HTTP service
                     <location> is the URI in nginx (IE: /mediatomb)
                     possible third arg: "[header value]"
@@ -147,7 +147,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`
  * `HTTPUSER` - As above, configure HTTP user `username;password`
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
- * `PROXY` - As above, configure proxy to app `http://dest/url;/path`
+ * `PROXY` - As above, configure proxy to app `http://dest/url/;/path/`
  * `PROXYBUFFER` - Enables or disabled the proxy request buffer `[on|off]`
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user
@@ -207,13 +207,13 @@ ENVIRONMENT variables don't support multiple values, use args as above
 
     sudo docker run -it --name smokeping -d dperson/smokeping
     sudo docker run -it -p 80:80 -p 443:443 --link smokeping:smokeping \
-                -d dperson/nginx -w "http://smokeping/smokeping;/smokeping"
+                -d dperson/nginx -w "http://smokeping/smokeping/;/smokeping/"
 
 OR
 
     sudo docker run -it --name smokeping -d dperson/smokeping
     sudo docker run -it -p 80:80 -p 443:443 --link smokeping:smokeping \
-                 -e PROXY="http://smokeping/smokeping;/smokeping" \
+                 -e PROXY="http://smokeping/smokeping/;/smokeping/" \
                  -d dperson/nginx
 
 ### Start nginx with a specified zoneinfo timezone:
