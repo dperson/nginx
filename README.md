@@ -159,7 +159,7 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
 ## Examples
 
 Any of the commands can be run at creation with `docker run` or later with
-`docker exec -it nginx.sh` (as of version 1.3 of docker).
+`docker exec -it nginx nginx.sh` (as of version 1.3 of docker).
 
 ### Start nginx with your real CA certs and setup SSL stapling:
 
