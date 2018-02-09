@@ -23,10 +23,10 @@ set -o nounset                              # Treat unset variables as an error
 #   location) optional location for basic auth
 #   IP) optionl range(s) to allow without auth
 # Return: configure Basic Auth
-basic() { local loc=${1:-\\/} dav file=/etc/nginx/conf.d/default.conf
+basic() { local loc="${1:-\\/}" dav file=/etc/nginx/conf.d/default.conf
     shift
     [[ ${1:-""} =~ ^dav ]] && {
-        dav=$(sed 's/^dav#//; s/#/ /g' <<< ${1:-""}); shift; }
+        dav="$(sed 's/^dav#//; s/#/ /g' <<< ${1:-""})"; shift; }
 
     grep -q '^[^#]*location '"$loc" $file ||
         sed -i '/location \/ /,/^    }/ { /^    }/a\
@@ -56,7 +56,7 @@ done; [[ ${1:-""} ]] && echo ' ')"'\
 # Arguments:
 #  none)
 # Return: The set body size
-client_max_body_size() { local value=${1:-100M} \
+client_max_body_size() { local value="${1:-100M}" \
                 file=/etc/nginx/conf.d/body_size.conf
     cat >$file <<-EOF
 		# Set the client_max_body_size for large uploads
@@ -81,7 +81,7 @@ content_security() { local policy="${1:-default-src: https: 'unsafe-inline'}" \
 # Arguments:
 #  none)
 # Return: The set proxy request buffer state
-proxy_request_buffering() { local value=$1 \
+proxy_request_buffering() { local value="$1" \
                 file=/etc/nginx/conf.d/proxy_request_buffering.conf
     cat >$file <<-EOF
 		# Disabled or enables the proxy_request_buffering, which is
@@ -99,9 +99,9 @@ proxy_request_buffering() { local value=$1 \
 #   locality) city
 #   org) company
 # Return: self-signed certs will be generated
-gencert() { local domain=${1:-*} country=${2:-NO} state=${3:-Rogaland} \
-            locality=${4:-Sola} org=${5:-None} dir=/etc/nginx/ssl
-    local cert=$dir/fullchain.pem key=$dir/privkey.pem
+gencert() { local domain="${1:-*}" country="${2:-NO}" state="${3:-Rogaland}" \
+            locality="${4:-Sola}" org="{5:-None}" dir=/etc/nginx/ssl
+    local cert="$dir/fullchain.pem" key="$dir/privkey.pem"
     [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
 
@@ -121,8 +121,8 @@ ipv6() { local file=/etc/nginx/conf.d/default.conf
 # Arguments:
 #   none)
 # Return: setup PFS config
-pfs() { local dir=/etc/nginx; local cert=$dir/ssl/ffdhe4096.pem \
-            file=$dir/conf.d/perfect_forward_secrecy.conf
+pfs() { local dir=/etc/nginx; local cert="$dir/ssl/ffdhe4096.pem" \
+            file="$dir/conf.d/perfect_forward_secrecy.conf"
     [[ -d $dir/ssl ]] || mkdir -p $dir/ssl
 
     [[ -e $cert ]] ||
@@ -197,7 +197,7 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
 #   user) user name for authentication
 #   pass) password for authentication
 # Return: configure HTTP auth user
-http_user() { local user=$1 pass=$2 file=/etc/nginx/htpasswd
+http_user() { local user="$1" pass="$2" file=/etc/nginx/htpasswd
     [[ -e $file ]] || touch $file
     htpasswd -b $file "$user" "$pass" &>/dev/null
 }
@@ -207,7 +207,7 @@ http_user() { local user=$1 pass=$2 file=/etc/nginx/htpasswd
 #   name) new server name
 #   oldname) old name to change from (defaults to localhost)
 # Return: configure server_name
-name() { local name=$1 oldname=${2:-localhost} \
+name() { local name="$1" oldname="${2:-localhost}" \
             file=/etc/nginx/conf.d/default.conf
     sed -i 's|\(^ *server_name\) '"$oldname"';|\1 '"$name"';|' $file
 }
@@ -229,8 +229,8 @@ ssi() { local file=/etc/nginx/conf.d/default.conf
 #   hostname) where to listen
 #   destination) where to send the request
 # Return: hostname redirect added to config
-redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$1 destination=$2 \
-            file=/etc/nginx/conf.d/default.conf
+redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname="$1" \
+            destination="$2" file=/etc/nginx/conf.d/default.conf
     sed -n '/^server {/,/^}/p' $file | grep -q "rewrite.*$destination" ||
         sed -i '/^server {/,/^}/ { n; /rewrite.*https.*\$host.*}/b; /^}/i\
 \
@@ -244,7 +244,7 @@ redirect() { [[ $1 =~ ^[0-9]*$ ]] && shift; local hostname=$1 destination=$2 \
 # Arguments:
 #   none)
 # Return: configure HSTS
-robot() { local tag=${1:-none} file=/etc/nginx/conf.d/robot.conf
+robot() { local tag="${1:-none}" file=/etc/nginx/conf.d/robot.conf
     cat >$file <<-EOF
 		# X-Robots-Tag
 		# Directive     Meaning
@@ -268,7 +268,7 @@ robot() { local tag=${1:-none} file=/etc/nginx/conf.d/robot.conf
 #   server) where to listen for connections
 #   dest) where to forward connections
 # Return: stream added to the config file
-stream() { local server=$1 dest=$2 proto=${3:-""} \
+stream() { local server="$1" dest="$2" proto="${3:-""}" \
             file=/etc/nginx/conf.d/default.stream
     if grep -q "server { listen $server${proto:+ $proto};" $file; then
         sed -i '/^[^#]*server { listen '"$server${proto:+ $proto}"';/,/^}/d' \
@@ -298,7 +298,7 @@ ssl_sessions() { local timeout="${1:-1d}" file=/etc/nginx/conf.d/sessions.conf
 #   cert) full path to cert file
 # Return: configure SSL stapling
 stapling() { local dir=/etc/nginx/ssl file=/etc/nginx/conf.d/stapling.conf
-    local cert=${1:-$dir/chain.pem}
+    local cert="${1:-$dir/chain.pem}"
 
     [[ -e $cert ]] || { echo "ERROR: invalid stapling cert: $cert" >&2;return; }
 
@@ -332,7 +332,7 @@ static() { local timeout="${1:-30d}" file=/etc/nginx/conf.d/default.conf
 #   server) hostname or IP to connect to
 #   location) URI in web server
 # Return: proxy added to the config file
-fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
+fastcgi() { local server="$1" location="$2" file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
         sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
     location '"$location"' {\
@@ -369,7 +369,7 @@ fastcgi() { local server=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 # Arguments:
 #   file) to be included
 # Return: file included in the config file
-include() { local conf=$1 file=/etc/nginx/conf.d/default.conf
+include() { local conf="$1" file=/etc/nginx/conf.d/default.conf
     grep -q "^[^#]*include $conf;\$" $file ||
         sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
 \
@@ -400,7 +400,7 @@ timezone() { local timezone="${1:-EST5EDT}"
 #   service) where to contact UWSGI
 #   location) URI in web server
 # Return: UWSGI added to the config file
-uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
+uwsgi() { local service="$1" location="$2" file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
         sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
     location '"$location"' {\
@@ -430,7 +430,7 @@ uwsgi() { local service=$1 location=$2 file=/etc/nginx/conf.d/default.conf
 #   location) URI in web server
 #   header) a HTTP header to add as traffic flows through the web proxy
 # Return: proxy added to the config file
-proxy() { local service=$1 location=$2 header=${3:-""}
+proxy() { local service="$1" location="$2" header="${3:-""}"
                 file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
         sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
@@ -470,7 +470,7 @@ proxy() { local service=$1 location=$2 header=${3:-""}
 # Arguments:
 #   none)
 # Return: Help text
-usage() { local RC=${1:-0}
+usage() { local RC="${1:-0}"
     echo "Usage: ${0##*/} [-opt] [command]
 Options (fields in '[]' are optional, '<>' are required):
     -h          This help
