@@ -7,8 +7,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get install -qqy --no-install-recommends apache2-utils gnupg1 openssl \
                 procps \
                 $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    apt-key adv --keyserver pgp.mit.edu --recv-keys \
-                573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 && \
+    apt-key adv --keyserver pgp.mit.edu --recv-keys ABF5BD827BD9BF62 && \
     echo "deb http://nginx.org/packages/mainline/debian/ stretch nginx" \
                 >>/etc/apt/sources.list && \
     apt-get update -qq && \
