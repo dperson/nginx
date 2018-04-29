@@ -611,7 +611,7 @@ shift $(( OPTIND - 1 ))
 [[ "${TZ:-""}" ]] && timezone $TZ
 [[ "${HTTPUSER:-""}" ]] && eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
             $HTTPUSER)
-[[ "${USWGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
+[[ "${UWSGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
 [[ "${PROXYBUFFER:-""}" ]] && proxy_request_buffering "$PROXYBUFFER"
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
