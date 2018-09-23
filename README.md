@@ -125,7 +125,7 @@ browser.
 
     The 'command' (if provided and valid) will be run instead of nginx
 
-ENVIRONMENT VARIABLES (only available with `docker run`)
+ENVIRONMENT VARIABLES
 
  * `IPV6` - As above, disables IPv6 support
  * `BASIC` - As above, setup basic auth for URI location, IE `/path`
