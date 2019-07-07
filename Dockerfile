@@ -1,17 +1,19 @@
-FROM debian:stretch
+FROM alpine
 MAINTAINER David Personette <dperson@gmail.com>
 
 # Install nginx
-RUN export DEBIAN_FRONTEND='noninteractive' && \
-    apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends apache2-utils gnupg1 openssl \
-                procps \
-                $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    apt-key adv --keyserver pgp.mit.edu --recv-keys ABF5BD827BD9BF62 && \
-    echo "deb http://nginx.org/packages/mainline/debian/ stretch nginx" \
-                >>/etc/apt/sources.list && \
-    apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends nginx && \
+RUN version=3.9 && \
+    apk --no-cache --no-progress upgrade && \
+    apk --no-cache --no-progress add apache2-utils bash curl shadow tini \
+                tzdata && \
+    addgroup -g 101 -S nginx && \
+    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx \
+                -g nginx nginx && \
+    curl -LSs https://nginx.org/keys/nginx_signing.rsa.pub \
+                -o /etc/apk/keys/nginx_signing.rsa.pub && \
+    echo "https://nginx.org/packages/mainline/alpine/v${version}/main" \
+                >>/etc/apk/repositories && \
+    apk add --no-cache --no-progress nginx && \
     sed -i 's/#gzip/gzip/' /etc/nginx/nginx.conf && \
     sed -i "/http_x_forwarded_for\"';/s/';/ '/" /etc/nginx/nginx.conf && \
     sed -i "/http_x_forwarded_for/a \\\
@@ -21,9 +23,14 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
                 >>/etc/nginx/nginx.conf && \
     [ -d /srv/www ] || mkdir -p /srv/www && \
     mv /usr/share/nginx/html/index.html /srv/www/ && \
-    apt-get purge -qqy gnupg1 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* && \
+    apk add --no-cache --no-progress --virtual .gettext gettext && \
+    mv /usr/bin/envsubst /usr/local/bin/ && \
+    runDeps="$(scanelf --needed --nobanner /usr/local/bin/envsubst | \
+                awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' | \
+                sort -u | xargs -r apk info --installed | sort -u)" && \
+    apk add --no-cache --no-progress $runDeps && \
+    apk del --no-cache --no-progress .gettext && \
+    rm -rf /tmp/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector
@@ -34,5 +41,8 @@ COPY nginx.sh /usr/bin/
 VOLUME ["/srv/www", "/etc/nginx"]
 
 EXPOSE 80 443
+
+HEALTHCHECK --interval=60s --timeout=15s --start-period=120s \
+             CMD curl -Lk 'https://localhost/index.html'
 
 ENTRYPOINT ["nginx.sh"]
