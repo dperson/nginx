@@ -28,8 +28,8 @@ RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
     runDeps="$(scanelf --needed --nobanner /usr/local/bin/envsubst | \
                 awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' | \
                 sort -u | xargs -r apk info --installed | sort -u)" && \
-    apk add --no-cache --no-progress $runDeps && \
     apk del --no-cache --no-progress .gettext && \
+    apk add --no-cache --no-progress $runDeps && \
     rm -rf /tmp/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
