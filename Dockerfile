@@ -4,8 +4,8 @@ MAINTAINER David Personette <dperson@gmail.com>
 # Install nginx
 RUN version=3.9 && \
     apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add apache2-utils bash curl shadow tini \
-                tzdata && \
+    apk --no-cache --no-progress add apache2-utils bash curl openssl shadow \
+                tini tzdata && \
     addgroup -g 101 -S nginx && \
     adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx \
                 -g nginx nginx && \
