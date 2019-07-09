@@ -2,7 +2,7 @@ FROM alpine
 MAINTAINER David Personette <dperson@gmail.com>
 
 # Install nginx
-RUN version=3.9 && \
+RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
     apk --no-cache --no-progress upgrade && \
     apk --no-cache --no-progress add apache2-utils bash curl openssl shadow \
                 tini tzdata && \
