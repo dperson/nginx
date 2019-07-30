@@ -560,28 +560,28 @@ while getopts ":h6B:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
         h) usage ;;
         6) ipv6 ;;
         B) proxy_request_buffering "$OPTARG" ;;
-        b) eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        b) eval basic $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         C) content_security "$OPTARG" ;;
         c) client_max_body_size "$OPTARG" ;;
-        g) eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        g) eval gencert $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         e) static $OPTARG ;;
-        f) eval fastcgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        f) eval fastcgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         p) pfs ;;
         P) prod ;;
         H) hsts ;;
         I) include "$OPTARG" ;;
         i) ssi ;;
-        n) eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        n) eval name $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         q) quick=1 ;;
         R) robot "$OPTARG" ;;
-        r) eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        r) eval redirect $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
         t) timezone $OPTARG ;;
-        T) eval stream $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        U) eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        u) eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        w) eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        T) eval stream $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        U) eval http_user $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        u) eval uwsgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        w) eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
@@ -589,30 +589,34 @@ done
 shift $(( OPTIND - 1 ))
 
 [[ "${IPV6:-""}" ]] && ipv6
-[[ "${BASIC:-""}" ]] && eval basic $(sed 's/^\|$/"/g; s/;/" "/g' <<< $BASIC)
-[[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+[[ "${BASIC:-""}" ]] && eval basic $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
+            $BASIC)
+[[ "${GENCERT:-""}" ]] && eval gencert $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
             $GENCERT)
 [[ "${EXPIRES:-""}" ]] && ssl_sessions $EXPIRES
-[[ "${FASTCGI:-""}" ]] && eval fastcgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
+[[ "${FASTCGI:-""}" ]] && eval fastcgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
             $FASTCGI)
 [[ "${PFS:-""}" ]] && pfs
 [[ "${PROD:-""}" ]] && prod
 [[ "${HSTS:-""}" ]] && hsts
 [[ "${INCLUDE:-""}" ]] && include "$INCLUDE"
 [[ "${SSI:-""}" ]] && ssi
-[[ "${STREAM:-""}" ]] && eval stream $(sed 's/^\|$/"/g; s/;/" "/g' <<< $STREAM)
-[[ "${NAME:-""}" ]] && eval name $(sed 's/^\|$/"/g; s/;/" "/g' <<< $NAME)
+[[ "${STREAM:-""}" ]] && eval stream $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
+            $STREAM)
+[[ "${NAME:-""}" ]] && eval name $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $NAME)
 [[ "${OUICK:-""}" ]] && quick=1
-[[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
-            $REDIRECT)
+[[ "${REDIRECT:-""}" ]] && eval redirect $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' \
+            <<< $REDIRECT)
 [[ "${ROBOT:-""}" ]] && robot "$ROBOT"
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
 [[ "${TZ:-""}" ]] && timezone $TZ
-[[ "${HTTPUSER:-""}" ]] && eval http_user $(sed 's/^\|$/"/g; s/;/" "/g' <<< \
-            $HTTPUSER)
-[[ "${UWSGI:-""}" ]] && eval uwsgi $(sed 's/^\|$/"/g; s/;/" "/g' <<< $UWSGI)
-[[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^\|$/"/g; s/;/" "/g' <<< $PROXY)
+[[ "${HTTPUSER:-""}" ]] && eval http_user $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' \
+            <<< $HTTPUSER)
+[[ "${UWSGI:-""}" ]] && eval uwsgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
+            $UWSGI)
+[[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
+            $PROXY)
 [[ "${PROXYBUFFER:-""}" ]] && proxy_request_buffering "$PROXYBUFFER"
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
