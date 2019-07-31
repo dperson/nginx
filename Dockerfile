@@ -1,14 +1,14 @@
-FROM debian:stretch
+FROM debian
 MAINTAINER David Personette <dperson@gmail.com>
 
 # Install nginx
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends apache2-utils gnupg1 openssl \
-                procps \
+    apt-get install -qqy --no-install-recommends apache2-utils curl gnupg1 \
+                openssl procps \
                 $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    apt-key adv --keyserver pgp.mit.edu --recv-keys ABF5BD827BD9BF62 && \
-    echo "deb http://nginx.org/packages/mainline/debian/ stretch nginx" \
+    curl -sSL http://nginx.org/keys/nginx_signing.key | sudo apt-key add - && \
+    echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" \
                 >>/etc/apt/sources.list && \
     apt-get update -qq && \
     apt-get install -qqy --no-install-recommends nginx && \
