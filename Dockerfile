@@ -7,7 +7,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get install -qqy --no-install-recommends apache2-utils curl gnupg1 \
                 openssl procps \
                 $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    curl -sSL http://nginx.org/keys/nginx_signing.key | sudo apt-key add - && \
+    curl -sSL http://nginx.org/keys/nginx_signing.key | apt-key add - && \
     echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" \
                 >>/etc/apt/sources.list && \
     apt-get update -qq && \
