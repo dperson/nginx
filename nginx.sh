@@ -142,7 +142,13 @@ zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eZV9q//////////8CAQI=
     echo "ssl_dhparam $cert;" >>$file
     echo '' >>$file
 
-    echo "ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!DSS:!aNULL:!eNULL:!EXPORT:!RC4:!DES:!3DES:!SSLv2:!MD5:!PSK';" >>$file
+    echo -n "ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:" >>$file
+    echo -n "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:" >>$file
+    echo -n "ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:" >>$file
+    echo -n "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:" >>$file
+    echo -n "ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:" >>$file
+    echo -n "ECDHE-RSA-AES128-SHA256:" >>$file
+    echo "!DSS:!aNULL:!eNULL:!EXPORT:!RC4:!DES:!3DES:!SSLv2:!MD5:!PSK';" >>$file
     grep -rq ssl_prefer_server_ciphers /etc/nginx ||
         echo 'ssl_prefer_server_ciphers on;' >>$file
     grep -rq ssl_protocols /etc/nginx ||
@@ -168,7 +174,8 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
             file2=/etc/nginx/conf.d/default.conf
     cat >$file <<-EOF
 	# HTTP Strict Transport Security (HSTS)
-	add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload";
+	add_header Strict-Transport-Security \
+	            "max-age=15768000; includeSubDomains; preload";
 	add_header Front-End-Https on;
 
 	# This will prevent certain click-jacking attacks, but will prevent
@@ -350,14 +357,14 @@ fastcgi() { local server="$1" location="$2" file=/etc/nginx/conf.d/default.conf
 \
         location ~ \.*php {\
             fastcgi_split_path_info ^(.+?\.php)(/.*)$;\
-            include            fastcgi_params;\
-            fastcgi_index      index.php;\
+            include         fastcgi_params;\
+            fastcgi_index   index.php;\
             fastcgi_intercept_errors on;\
-            fastcgi_param      SCRIPT_FILENAME $document_root$fastcgi_script_name;\
-            fastcgi_param      PATH_INFO $fastcgi_path_info;\
-            fastcgi_param      modHeadersAvailable true;\
-            fastcgi_param      front_controller_active true;\
-            fastcgi_pass       '"$server"';\
+            fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;\
+            fastcgi_param   PATH_INFO $fastcgi_path_info;\
+            fastcgi_param   modHeadersAvailable true;\
+            fastcgi_param   front_controller_active true;\
+            fastcgi_pass    '"$server"';\
 \
             ## Optional: Do not log, get it at the destination\
             access_log off;\
