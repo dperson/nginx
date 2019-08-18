@@ -466,7 +466,8 @@ proxy() { local service="$1" location="$2" header="${3:-""}"
         proxy_http_version 1.1;\
         proxy_set_header Connection "upgrade";\
         proxy_set_header Upgrade $http_upgrade;\
-        proxy_read_timeout 600s;\
+        proxy_read_timeout 3600s;\
+        proxy_send_timeout 3600s;\
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
