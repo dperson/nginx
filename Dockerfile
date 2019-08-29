@@ -1,29 +1,36 @@
-FROM debian
+FROM alpine
 MAINTAINER David Personette <dperson@gmail.com>
 
 # Install nginx
-RUN export DEBIAN_FRONTEND='noninteractive' && \
-    apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends apache2-utils curl gnupg1 \
-                openssl procps \
-                $(apt-get -s dist-upgrade|awk '/^Inst.*ecurity/ {print $2}') &&\
-    curl -sSL http://nginx.org/keys/nginx_signing.key | apt-key add - && \
-    echo "deb http://nginx.org/packages/mainline/debian/ buster nginx" \
-                >>/etc/apt/sources.list && \
-    apt-get update -qq && \
-    apt-get install -qqy --no-install-recommends nginx && \
+RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
+    apk --no-cache --no-progress upgrade && \
+    apk --no-cache --no-progress add apache2-utils bash curl openssl shadow \
+                tini tzdata && \
+    addgroup -S nginx && \
+    adduser -S -D -H -h /var/cache/nginx -s /sbin/nologin -G nginx \
+                -g 'Nginx User' nginx && \
+    curl -LSs https://nginx.org/keys/nginx_signing.rsa.pub \
+                -o /etc/apk/keys/nginx_signing.rsa.pub && \
+    echo "https://nginx.org/packages/mainline/alpine/v${version}/main" \
+                >>/etc/apk/repositories && \
+    apk add --no-cache --no-progress nginx && \
     sed -i 's/#gzip/gzip/' /etc/nginx/nginx.conf && \
     sed -i "/http_x_forwarded_for\"';/s/';/ '/" /etc/nginx/nginx.conf && \
     sed -i "/http_x_forwarded_for/a \\\
                       '\$request_time \$upstream_response_time';" \
                 /etc/nginx/nginx.conf && \
-    echo "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
+    echo -e "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
                 >>/etc/nginx/nginx.conf && \
     [ -d /srv/www ] || mkdir -p /srv/www && \
     mv /usr/share/nginx/html/index.html /srv/www/ && \
-    apt-get purge -qqy gnupg1 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* && \
+    apk add --no-cache --no-progress --virtual .gettext gettext && \
+    mv /usr/bin/envsubst /usr/local/bin/ && \
+    runDeps="$(scanelf --needed --nobanner /usr/local/bin/envsubst | \
+                awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' | \
+                sort -u | xargs -r apk info --installed | sort -u)" && \
+    apk del --no-cache --no-progress .gettext && \
+    apk add --no-cache --no-progress $runDeps && \
+    rm -rf /tmp/* && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 # Forward request and error logs to docker log collector
@@ -35,4 +42,7 @@ VOLUME ["/srv/www", "/etc/nginx"]
 
 EXPOSE 80 443
 
-ENTRYPOINT ["nginx.sh"]
+HEALTHCHECK --interval=60s --timeout=15s --start-period=120s \
+             CMD curl -Lk 'https://localhost/index.html'
+
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nginx.sh"]
