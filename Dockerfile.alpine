@@ -6,9 +6,9 @@ RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
     apk --no-cache --no-progress upgrade && \
     apk --no-cache --no-progress add apache2-utils bash curl openssl shadow \
                 tini tzdata && \
-    addgroup -g 101 -S nginx && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx \
-                -g nginx nginx && \
+    addgroup -S nginx && \
+    adduser -S -D -H -h /var/cache/nginx -s /sbin/nologin -G nginx \
+                -g 'Nginx User' nginx && \
     curl -LSs https://nginx.org/keys/nginx_signing.rsa.pub \
                 -o /etc/apk/keys/nginx_signing.rsa.pub && \
     echo "https://nginx.org/packages/mainline/alpine/v${version}/main" \
