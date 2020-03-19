@@ -95,18 +95,18 @@ browser.
                     required arg: "<hostname>;<https://destination/URI>"
                     <hostname> to listen for (Fully Qualified Domain Name)
                     <destination> where to send the requests
-        -s "<cert>" Configure SSL stapling
-                    required arg: cert(s) your CA uses for the OCSP check
         -S ""       Configure SSL sessions
                     possible arg: "[timeout]" - timeout for session reuse, IE 5m
-        -t ""       Configure timezone
-                    possible arg: "[timezone]" - zoneinfo timezone for container
+        -s "<cert>" Configure SSL stapling
+                    required arg: cert(s) your CA uses for the OCSP check
         -T "<server;dest>[;protocol]" Configure a stream proxy
                     required arg: "<[IP:]port>;<dest>"
                     <server> what (optional) IP and (required) port to listen on
                     <dest> where to send the requests to <name_or_IP>:<port>
                     possible third arg: "[protocol]"
                     [protocol] if not TCP, specify here (IE "udp")
+        -t ""       Configure timezone
+                    possible arg: "[timezone]" - zoneinfo timezone for container
         -U "<username;password>" Configure a HTTP auth user
                     required arg: "username;password"
                     <username> is the name the user enters for authorization
@@ -115,13 +115,22 @@ browser.
                     required arg: "<server:port|unix:///path/to.sock>;</location>"
                     <service> is how to contact UWSGI
                     <location> is the URI in nginx (IE: /wiki)
+        -W "<service;hosts>" Configure web proxy and location
+                    required arg: "http://<server[:port]>/;/<location>/"
+                    <service> is how to contact the HTTP service
+                    <hosts> is a comma separated list of host names
+                    possible args: "[header value]" "[sockets]"
+                    [header value] set "header" to "value" on traffic going
+                                through the proxy
+                    [sockets] if set to "no" don't enable use of websockets
         -w "<service;location>" Configure web proxy and location
                     required arg: "http://<server[:port]>/;/<location>/"
                     <service> is how to contact the HTTP service
                     <location> is the URI in nginx (IE: /mediatomb)
-                    possible third arg: "[header value]"
+                    possible args: "[header value]" "[sockets]"
                     [header value] set "header" to "value" on traffic going
                                 through the proxy
+                    [sockets] if set to "no" don't enable use of websockets
 
     The 'command' (if provided and valid) will be run instead of nginx
 
@@ -148,6 +157,7 @@ ENVIRONMENT VARIABLES
  * `HTTPUSER` - As above, configure HTTP user `username;password`
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
  * `PROXY` - As above, configure proxy to app `http://dest/url/;/path/`
+ * `PROXY_HOST` - As above, configure proxy to app `http://dest/url/;host.name/`
  * `PROXYBUFFER` - Enables or disabled the proxy request buffer `[on|off]`
  * `USERID` - Set the UID for the webserver user
  * `GROUPID` - Set the GID for the webserver user

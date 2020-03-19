@@ -175,19 +175,19 @@ hsts() { local file=/etc/nginx/conf.d/hsts.conf \
     cat >$file <<-EOF
 	# HTTP Strict Transport Security (HSTS)
 	add_header Strict-Transport-Security \
-	            "max-age=15768000; includeSubDomains; preload";
-	add_header Front-End-Https on;
+	            "max-age=15768000; includeSubDomains; preload" always;
+	add_header Front-End-Https "on" always;
 
 	# This will prevent certain click-jacking attacks, but will prevent
 	# other sites from framing your site, so delete or modify as necessary!
-	add_header X-Content-Type-Options nosniff;
-	add_header X-Download-Options noopen;
-	add_header X-Frame-Options SAMEORIGIN;
-	add_header X-Permitted-Cross-Domain-Policies none;
+	add_header X-Content-Type-Options "nosniff" always;
+	add_header X-Download-Options "noopen" always;
+	add_header X-Frame-Options "SAMEORIGIN" always;
+	add_header X-Permitted-Cross-Domain-Policies "none";
 
 	# Header enables the Cross-site scripting (XSS) filter in most browsers.
 	# This will re-enable it for this website if it was user disabled.
-	add_header X-XSS-Protection "1; mode=block";
+	add_header X-XSS-Protection "1; mode=block" always;
 	EOF
     sed -i '/^ *listen 80/,/^}/ { /proxy_cache/,/^}/c\
 \
@@ -436,9 +436,10 @@ uwsgi() { local service="$1" location="$2" file=/etc/nginx/conf.d/default.conf
 #   service) where to contact HTTP service
 #   location) URI in web server
 #   header) a HTTP header to add as traffic flows through the web proxy
+#   sockets) set to "no" to disable websockets
 # Return: proxy added to the config file
-proxy() { local service="$1" location="$2" header="${3:-""}"
-                file=/etc/nginx/conf.d/default.conf
+proxy() { local service="$1" location="$2" header="${3:-""}" \
+                sockets="${4:-yes}" file=/etc/nginx/conf.d/default.conf
     if grep -q "location $location {" $file; then
         sed -i '/^[^#]*location '"$(sed 's|/|\\/|g'<<<$location)"' {/,/^    }/c\
     location '"$location"' {\
@@ -454,24 +455,80 @@ proxy() { local service="$1" location="$2" header="${3:-""}"
     sed -i '/^[^#]*location '"$(sed 's|/|\\/|g' <<< $location)"' {/a\
         proxy_pass       '"$service"';\
         proxy_set_header Host $http_host;\
+        proxy_set_header Range $http_range;\
+        proxy_set_header If-Range $http_if_range;\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
         proxy_set_header X-Forwarded-Proto $scheme;\
         proxy_set_header X-Real-IP $remote_addr;\
         # Mitigate httpoxy attack (see README for details)\
         proxy_set_header Proxy "";\
+        add_header Referrer-Policy "no-referrer";\
 \
 '"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
 \
-        ## Required for websockets\
+'"$([[ $sockets != "no" ]] && echo '        ## Required for websockets\
         proxy_http_version 1.1;\
         proxy_set_header Connection "upgrade";\
         proxy_set_header Upgrade $http_upgrade;\
         proxy_read_timeout 3600s;\
-        proxy_send_timeout 3600s;\
+        proxy_send_timeout 3600s;')"'\
 \
         ## Optional: Do not log, get it at the destination\
         access_log off;
-        ' $file
+' $file
+}
+
+### proxy_host: Configure a web proxy hostname
+# Arguments:
+#   service) where to contact HTTP service
+#   hosts) comma separated list of server_name's to listen on
+#   header) a HTTP header to add as traffic flows through the web proxy
+#   sockets) set to "no" to disable websockets
+# Return: proxy added to the config file
+proxy_host() { local service="$1" hosts="$2" header="${3:-""}" \
+                sockets="${4:-yes}" file=/etc/nginx/conf.d/default.conf
+    if grep -q "server { #${hosts%%,*}" $file; then
+        sed -i '/^[^#]*server { #'"${hosts%%,*}"',/^}/c\
+    server { #'"${hosts%%,*}"'\
+}' $file
+    else
+        echo -e "\nserver { #${hosts%%,*}\n}" >>$file
+    fi
+
+    sed -i '/^server { #'"${hosts%%,*}"'/a\
+    listen      443 ssl http2;\
+    listen      [::]:443 ssl http2;\
+\
+    ssl_certificate      /etc/nginx/ssl/fullchain.pem;\
+    ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\
+\
+    add_header Referrer-Policy "no-referrer";\
+    add_header Content-Security-Policy "frame-ancestors '"$(sed 's/,/ /g' <<< \
+                $hosts)"'";\
+\
+    location / {\
+        proxy_pass       '"$service"';\
+        proxy_set_header Host $http_host;\
+        proxy_set_header Range $http_range;\
+        proxy_set_header If-Range $http_if_range;\
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
+        proxy_set_header X-Forwarded-Proto $scheme;\
+        proxy_set_header X-Real-IP $remote_addr;\
+        # Mitigate httpoxy attack (see README for details)\
+        proxy_set_header Proxy "";\
+'"$([[ $header ]] && echo -e "        proxy_set_header $header;\\\n")"'\
+\
+'"$([[ $sockets != "no" ]] && echo '        ## Required for websockets\
+        proxy_http_version 1.1;\
+        proxy_set_header Connection "upgrade";\
+        proxy_set_header Upgrade $http_upgrade;\
+        proxy_read_timeout 3600s;\
+        proxy_send_timeout 3600s;')"'\
+    }\
+\
+    ## Optional: Do not log, get it at the destination\
+    access_log off;
+' $file
 }
 
 ### usage: Help
@@ -530,18 +587,18 @@ Options (fields in '[]' are optional, '<>' are required):
                 required arg: \"<hostname>;<https://destination/URI>\"
                 <hostname> to listen for (Fully Qualified Domain Name)
                 <destination> where to send the requests
-    -s \"<cert>\" Configure SSL stapling
-                required arg: cert(s) your CA uses for the OCSP check
     -S \"\"       Configure SSL sessions
                 possible arg: \"[timeout]\" - timeout for session reuse
-    -t \"\"       Configure timezone
-                possible arg: \"[timezone]\" - zoneinfo timezone for container
+    -s \"<cert>\" Configure SSL stapling
+                required arg: cert(s) your CA uses for the OCSP check
     -T \"<server;dest>[;protocol]\" Configure a stream proxy
                 required arg: \"<[IP:]port>;<dest>\"
                 <server> what (optional) IP and (required) port to listen on
                 <dest> where to send the requests to <name_or_IP>:<port>
                 possible third arg: \"[protocol]\"
                 [protocol] if not TCP, specify here (IE \"udp\")
+    -t \"\"       Configure timezone
+                possible arg: \"[timezone]\" - zoneinfo timezone for container
     -U \"<username;password>\" Configure a HTTP auth user
                 required arg: \"username;password\"
                 <username> is the name the user enters for authorization
@@ -550,20 +607,29 @@ Options (fields in '[]' are optional, '<>' are required):
                 required arg: \"<server:port|unix:///path/to.sock>;</location>\"
                 <service> is how to contact UWSGI
                 <location> is the URI in nginx (IE: /wiki)
+    -W \"<service;hosts>\" Configure web proxy and location
+                required arg: \"http://<server[:port]>/;/<location>/\"
+                <service> is how to contact the HTTP service
+                <hosts> is a comma separated list of host names
+                possible args: \"[header value]\" \"[sockets]\"
+                [header value] set \"header\" to \"value\" on traffic going
+                            through the proxy
+                [sockets] if set to \"no\" don't enable use of websockets
     -w \"<service;location>\" Configure web proxy and location
                 required arg: \"http://<server[:port]>/;/<location>/\"
                 <service> is how to contact the HTTP service
                 <location> is the URI in nginx (IE: /mediatomb)
-                possible third arg: \"[header value]\"
+                possible args: \"[header value]\" \"[sockets]\"
                 [header value] set \"header\" to \"value\" on traffic going
                             through the proxy
+                [sockets] if set to \"no\" don't enable use of websockets
 
 The 'command' (if provided and valid) will be run instead of nginx
 " >&2
     exit $RC
 }
 
-while getopts ":h6B:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
+while getopts ":h6B:b:C:c:g:e:f:PpHI:in:R:r:S:s:T:t:U:u:W:w:q" opt; do
     case "$opt" in
         h) usage ;;
         6) ipv6 ;;
@@ -574,8 +640,8 @@ while getopts ":h6B:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
         g) eval gencert $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         e) static $OPTARG ;;
         f) eval fastcgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        p) pfs ;;
         P) prod ;;
+        p) pfs ;;
         H) hsts ;;
         I) include "$OPTARG" ;;
         i) ssi ;;
@@ -583,12 +649,13 @@ while getopts ":h6B:b:C:c:g:e:f:pPHI:in:R:r:s:S:t:T:U:u:w:q" opt; do
         q) quick=1 ;;
         R) robot "$OPTARG" ;;
         r) eval redirect $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
-        s) stapling $OPTARG ;;
         S) ssl_sessions $OPTARG ;;
-        t) timezone $OPTARG ;;
+        s) stapling $OPTARG ;;
         T) eval stream $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        t) timezone $OPTARG ;;
         U) eval http_user $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         u) eval uwsgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
+        W) eval proxy_host $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         w) eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
@@ -625,6 +692,8 @@ shift $(( OPTIND - 1 ))
             $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
             $PROXY)
+[[ "${PROXYHOST:-""}" ]] && eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
+            $PROXYHOST)
 [[ "${PROXYBUFFER:-""}" ]] && proxy_request_buffering "$PROXYBUFFER"
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o nginx
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o nginx
