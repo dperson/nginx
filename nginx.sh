@@ -345,7 +345,7 @@ fastcgi() { local server="$1" location="$2" file=/etc/nginx/conf.d/default.conf
     location '"$location"' {\
     }' $file
     else
-        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
+        sed -i '/^[^#]*location \/ {$/,/^    }$/ { /^    }/a\
 \
     location '"$location"' {\
     }
@@ -413,7 +413,7 @@ uwsgi() { local service="$1" location="$2" file=/etc/nginx/conf.d/default.conf
     location '"$location"' {\
     }' $file
     else
-        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
+        sed -i '/^[^#]*location \/ {$/,/^    }$/ { /^    }/a\
 \
     location '"$location"' {\
     }
@@ -445,7 +445,7 @@ proxy() { local service="$1" location="$2" header="${3:-""}" \
     location '"$location"' {\
     }' $file
     else
-        sed -i '/^[^#]*location \/ /,/^    }/ { /^    }/a\
+        sed -i '/^[^#]*location \/ {$/,/^    }$/ { /^    }/a\
 \
     location '"$location"' {\
     }
@@ -492,12 +492,14 @@ proxy_host() { local service="$1" hosts="$2" header="${3:-""}" \
     server { #'"${hosts%%,*}"'\
 }' $file
     else
-        echo -e "\nserver { #${hosts%%,*}\n}" >>$file
+        echo -e "\nserver { #${hosts%%,*}\n} #${hosts%%,*}" >>$file
     fi
 
     sed -i '/^server { #'"${hosts%%,*}"'/a\
     listen      443 ssl http2;\
     listen      [::]:443 ssl http2;\
+\
+    server_name '"$hosts"';\
 \
     ssl_certificate      /etc/nginx/ssl/fullchain.pem;\
     ssl_certificate_key  /etc/nginx/ssl/privkey.pem;\
@@ -506,7 +508,7 @@ proxy_host() { local service="$1" hosts="$2" header="${3:-""}" \
     add_header Content-Security-Policy "frame-ancestors '"$(sed 's/,/ /g' <<< \
                 $hosts)"'";\
 \
-    location / {\
+    location / { # '"${hosts%%,*}"'\
         proxy_pass       '"$service"';\
         proxy_set_header Host $http_host;\
         proxy_set_header Range $http_range;\
@@ -524,7 +526,7 @@ proxy_host() { local service="$1" hosts="$2" header="${3:-""}" \
         proxy_set_header Upgrade $http_upgrade;\
         proxy_read_timeout 3600s;\
         proxy_send_timeout 3600s;')"'\
-    }\
+    } # '"${hosts%%,*}"'\
 \
     ## Optional: Do not log, get it at the destination\
     access_log off;
@@ -607,10 +609,11 @@ Options (fields in '[]' are optional, '<>' are required):
                 required arg: \"<server:port|unix:///path/to.sock>;</location>\"
                 <service> is how to contact UWSGI
                 <location> is the URI in nginx (IE: /wiki)
-    -W \"<service;hosts>\" Configure web proxy and location
-                required arg: \"http://<server[:port]>/;/<location>/\"
+    -W \"<service;hosts>\" Configure web proxy hostname and location
+                required arg: \"http://<server[:port]>/;hosts\"
                 <service> is how to contact the HTTP service
-                <hosts> is a comma separated list of host names
+                <hosts> is a comma separated list of host names (minimum of 1)
+                **NOTE**: the webserver will listen, but DNS is still needed
                 possible args: \"[header value]\" \"[sockets]\"
                 [header value] set \"header\" to \"value\" on traffic going
                             through the proxy

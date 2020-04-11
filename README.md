@@ -70,7 +70,6 @@ browser.
                         org - company
         -P          Configure Production mode (no server tokens)
         -p          Configure PFS (Perfect Forward Secrecy)
-                    NOTE: DH keygen is slow
         -H          Configure HSTS (HTTPS Strict Transport Security)
         -I "<file>" Include a configuration file
                     required arg: "<file>"
@@ -115,10 +114,11 @@ browser.
                     required arg: "<server:port|unix:///path/to.sock>;</location>"
                     <service> is how to contact UWSGI
                     <location> is the URI in nginx (IE: /wiki)
-        -W "<service;hosts>" Configure web proxy and location
-                    required arg: "http://<server[:port]>/;/<location>/"
+        -W "<service;hosts>" Configure web proxy hostname and location
+                    required arg: "http://<server[:port]>/;hosts"
                     <service> is how to contact the HTTP service
-                    <hosts> is a comma separated list of host names
+                    <hosts> is a comma separated list of host names (minimum of 1)
+                    NOTE: the webserver will listen, but DNS is still needed
                     possible args: "[header value]" "[sockets]"
                     [header value] set "header" to "value" on traffic going
                                 through the proxy
