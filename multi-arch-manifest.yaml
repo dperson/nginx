@@ -1,4 +1,4 @@
-image: dperson/torproxy:latest
+image: dperson/nginx:latest
 manifests:
   - image: dperson/nginx:amd64
     platform:
