@@ -1,0 +1,16 @@
+image: dperson/torproxy:latest
+manifests:
+  - image: dperson/nginx:amd64
+    platform:
+      architecture: amd64
+      os: linux
+  - image: dperson/nginx:aarch64
+    platform:
+      architecture: arm64
+      os: linux
+      variant: v8
+  - image: dperson/nginx:armhf
+    platform:
+      architecture: arm
+      os: linux
+      variant: v6
