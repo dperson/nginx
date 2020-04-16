@@ -1,4 +1,4 @@
-FROM arm64v6/nginx:alpine
+FROM arm64v8/nginx:alpine
 COPY qemu-aarch64-static /usr/bin/
 MAINTAINER David Personette <dperson@gmail.com>
 
