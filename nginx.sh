@@ -689,8 +689,9 @@ shift $(( OPTIND - 1 ))
 [[ "${STAPLING:-""}" ]] && stapling $STAPLING
 [[ "${SSL_SESSIONS:-""}" ]] && ssl_sessions $SSL_SESSIONS
 [[ "${TZ:-""}" ]] && timezone $TZ
-[[ "${HTTPUSER:-""}" ]] && eval http_user $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' \
-            <<< $HTTPUSER)
+while read i; do
+    eval http_user $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $i)
+done < <(env | awk '/^HTTPUSER[0-9=_]/ {sub (/^[^=]*=/, "", $0); print}')
 [[ "${UWSGI:-""}" ]] && eval uwsgi $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \
             $UWSGI)
 [[ "${PROXY:-""}" ]] && eval proxy $(sed 's/^/"/g; s/$/"/g; s/;/" "/g' <<< \

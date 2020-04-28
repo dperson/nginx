@@ -154,7 +154,7 @@ ENVIRONMENT VARIABLES
  * `STAPLING` - As above, configure SSL stapling
  * `SSL_SESSIONS` - As above, setup SSL session reuse
  * `TZ` - As above, configure the zoneinfo timezone, IE `EST5EDT`
- * `HTTPUSER` - As above, configure HTTP user `username;password`
+ * `HTTPUSER` - As above, configure HTTP user `username;password` (See NOTE2)
  * `USWGI` - As above, configure UWSGI app `http://dest:port/url;/path`
  * `PROXY` - As above, configure proxy to app `http://dest/url/;/path/`
  * `PROXY_HOST` - As above, configure proxy to app `http://dest/url/;host.name/`
@@ -165,6 +165,9 @@ ENVIRONMENT VARIABLES
  * `CONTENTSECURITY` - Set a CSP (Content Security Policy)
 
 **NOTE**: The `-r`/`REDIRECT` no longer require the port be specified.
+
+**NOTE2**: optionally supports additional variables starting with the same name,
+IE `HTTPUSER` also will work for `HTTPUSER2`, `HTTPUSER3`... `HTTPUSERx`, etc.
 
 ## Examples
 
