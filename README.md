@@ -145,7 +145,7 @@ ENVIRONMENT VARIABLES
  * `PROD` - As above, production server flags
  * `HSTS` - As above, HTTPS Strict Transport Security
  * `INCLUDE` - As above, file to be included in configuration
- * `SSI` - As above, setup basic auth for URI location, IE `/path`
+ * `SSI` - As above, enable SSI (Server Side Includes)
  * `NAME` - As above, set servername
  * `OUICK` - As above, don't generate SSL cert
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
