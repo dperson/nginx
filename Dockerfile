@@ -22,7 +22,7 @@ RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
     echo -e "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
                 >>/etc/nginx/nginx.conf && \
     [ -d /srv/www ] || mkdir -p /srv/www && \
-    mv /usr/share/nginx/html/index.html /srv/www/ && \
+    { mv /usr/share/nginx/html/index.html /srv/www/ || :; } && \
     apk add --no-cache --no-progress --virtual .gettext gettext && \
     mv /usr/bin/envsubst /usr/local/bin/ && \
     runDeps="$(scanelf --needed --nobanner /usr/local/bin/envsubst | \
