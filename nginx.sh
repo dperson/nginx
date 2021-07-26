@@ -100,7 +100,7 @@ proxy_request_buffering() { local value="$1" \
 #   org) company
 # Return: self-signed certs will be generated
 gencert() { local domain="${1:-*}" country="${2:-NO}" state="${3:-Rogaland}" \
-            locality="${4:-Sola}" org="{5:-None}" dir=/etc/nginx/ssl
+            locality="${4:-Sola}" org="${5:-None}" dir=/etc/nginx/ssl
     local cert="$dir/fullchain.pem" key="$dir/privkey.pem"
     [[ -e $cert ]] && return
     [[ -d $dir ]] || mkdir -p $dir
