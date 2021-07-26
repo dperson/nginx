@@ -16,7 +16,7 @@ RUN version=$(egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release) && \
     apk add --no-cache --no-progress nginx && \
     sed -i 's/#gzip/gzip/' /etc/nginx/nginx.conf && \
     sed -i "/http_x_forwarded_for\"';/s/';/ '/" /etc/nginx/nginx.conf && \
-    sed -i "/http_x_forwarded_for/a \\\
+    sed -i "/http_x_forwarded_for/a \\ \
                       '\$request_time \$upstream_response_time';" \
                 /etc/nginx/nginx.conf && \
     echo -e "\n\nstream {\n    include /etc/nginx/conf.d/*.stream;\n}" \
