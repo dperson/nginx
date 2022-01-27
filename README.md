@@ -147,7 +147,7 @@ ENVIRONMENT VARIABLES
  * `INCLUDE` - As above, file to be included in configuration
  * `SSI` - As above, enable SSI (Server Side Includes)
  * `NAME` - As above, set servername
- * `OUICK` - As above, don't generate SSL cert
+ * `QUICK` - As above, don't generate SSL cert
  * `REDIRECT` - As above, configure redirect `port;hostname;https://dest/url`
  * `ROBOT` - As above, set header to stop robot indexing
  * `STREAM` - As above, configure a stream proxy
